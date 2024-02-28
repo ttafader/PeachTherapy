@@ -22,6 +22,8 @@ firebase = pyrebase.initialize_app(config)
 
 auth=firebase.auth()
 
+# cool 
+
 class Login(QDialog):
     def __init__(self):
         super(Login,self).__init__()
