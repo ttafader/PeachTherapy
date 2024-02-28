@@ -1,0 +1,36 @@
+{
+  "age": "28",
+  "birthdate": "1995-03-16",
+  "doctor_id": "rVe4yKCgunaOMpOhzhxrxjic8273",
+  "first_name": "Lucas",
+  "gender": "M",
+  "health_card_number": "473284",
+  "last_name": "C",
+  "patient_id": "-NqnWf6fT3eMdRZxtXwa",
+  "recordings":{
+	"2020-10-10:12:20:20": {
+		"progress": 29,
+		"audio_url": "url",
+		"csv_url": "url",
+		
+	},
+	{
+		"progress": 29,
+		"audio_url": "url",
+		"csv_url": "url",
+		"datetime":"2020-10-10:12:20:20"
+	},
+	{
+		"progress": 29,
+		"audio_url": "url",
+		"csv_url": "url",
+		"datetime":"2020-10-10:12:20:20"
+	},
+	{
+		"progress": 29,
+		"audio_url": "url",
+		"csv_url": "url",
+		"datetime":"2020-10-10:12:20:20"
+	}
+}
+}

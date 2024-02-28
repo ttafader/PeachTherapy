@@ -1,0 +1,20 @@
+<RCC>
+  <qresource prefix="icons">
+    <file>icons/p_mag.png</file>
+    <file>icons/p_cal.png</file>
+    <file>icons/p_talk.png</file>
+    <file>icons/p_gear.png</file>
+    <file>icons/p_logout.png</file>
+    <file>icons/p_talk.png</file>
+    <file>icons/p_view.png</file>
+    <file>icons/logo.png</file>
+    <file>icons/w_acc.png</file>
+    <file>icons/w_cal.png</file>
+    <file>icons/w_gear.png</file>
+    <file>icons/w_logout.png</file>
+    <file>icons/w_notif.png</file>
+    <file>icons/w_rec.png</file>
+    <file>icons/w_talk.png</file>
+    <file>icons/w_view.png</file>
+  </qresource>
+</RCC>
