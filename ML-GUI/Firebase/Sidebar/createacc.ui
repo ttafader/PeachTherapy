@@ -250,7 +250,7 @@ font-color: rgb(124, 201, 199);
 padding-left: 11px;</string>
    </property>
   </widget>
-  <widget class="QLineEdit" name="jobdesc">
+  <widget class="QLineEdit" name="clinic">
    <property name="geometry">
     <rect>
      <x>210</x>
@@ -290,7 +290,7 @@ padding-left: 11px;</string>
 font: 81 10pt &quot;Montserrat SemiBold&quot;;</string>
    </property>
    <property name="text">
-    <string>Job Description:</string>
+    <string>Clinic:</string>
    </property>
   </widget>
   <widget class="QLineEdit" name="confirmpass">
@@ -405,7 +405,7 @@ color: rgb(220, 26, 0);</string>
   <zorder>label_6</zorder>
   <zorder>label_7</zorder>
   <zorder>email</zorder>
-  <zorder>jobdesc</zorder>
+  <zorder>clinic</zorder>
   <zorder>label_8</zorder>
   <zorder>confirmpass</zorder>
   <zorder>label_4</zorder>

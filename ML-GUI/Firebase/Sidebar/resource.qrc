@@ -1,5 +1,14 @@
 <RCC>
   <qresource prefix="icons">
+    <file>icons/p_playback.png</file>
+    <file>icons/p_redo.png</file>
+    <file>icons/save.png</file>
+    <file>icons/start rec.png</file>
+    <file>icons/stoprec.png</file>
+    <file>icons/meow.png</file>
+    <file>icons/taj_dp.png</file>
+    <file>icons/off.png</file>
+    <file>icons/on.png</file>
     <file>icons/p_mag.png</file>
     <file>icons/p_cal.png</file>
     <file>icons/p_talk.png</file>

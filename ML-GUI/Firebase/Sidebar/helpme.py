@@ -1,5 +1,5 @@
 import sys
-from PyQt5 import QtWidgets
+from PyQt5 import QtWidgets, QtCore
 from PyQt5.QtWidgets import QDialog, QApplication, QMessageBox
 from PyQt5.uic import loadUi
 from peach_therapy import Ui_MainWindow
@@ -44,9 +44,13 @@ class Login(QDialog):
         createacc = CreateAcc()
         if createacc.exec_() == QtWidgets.QDialog.Accepted:
             self.accept()  # Close the login dialog if account creation successful
-            window.set_doctor_name()  # Call set_doctor_name method in MainWindow
+            # Connect the signal to reopen the login dialog after account creation
+            createacc = CreateAcc()
+            self.close()  # Close the current window
 
 class CreateAcc(QDialog):
+    account_created = QtCore.pyqtSignal()
+
     def __init__(self):
         super(CreateAcc, self).__init__()
         loadUi("createacc.ui", self)
@@ -60,7 +64,7 @@ class CreateAcc(QDialog):
         email = self.email.text()
         first_name = self.firstname.text()
         last_name = self.lastname.text()
-        job_desc = self.jobdesc.text()
+        clinic = self.clinic.text()
 
         if self.password.text() == self.confirmpass.text():
             password = self.password.text()
@@ -68,16 +72,18 @@ class CreateAcc(QDialog):
                 auth_data = auth.create_user_with_email_and_password(email, password)
                 user_id = auth_data['localId']  # Extract the user ID from the authentication data
 
-                # Write user info to the 'doctors' node in Firebase
-                doctor_ref = db.reference('doctors').child(user_id)
+                # Write user info to the 'doctors -> profile' node in Firebase
+                doctor_ref = db.reference('doctors').child(user_id).child('profile')
                 doctor_ref.set({
                     "first_name": first_name,
                     "last_name": last_name,
-                    "job_desc": job_desc,
-                    "email": email
+                    "clinic": clinic,
+                    "email": email,
+                    "user_type" : 1
                 })
 
                 self.accept()  # Close the dialog if account creation successful
+                self.account_created.emit()  # Emit the signal
             except HTTPError as e:
                 error_message = e.args[0].response.json()['error']['message']
                 if error_message == "EMAIL_EXISTS":
@@ -100,14 +106,14 @@ class MainWindow(QtWidgets.QMainWindow):
         user = auth.current_user
         if user:
             user_id = user['localId']
-            doctor_ref = db.reference('doctors').child(user_id)
+            doctor_ref = db.reference('doctors').child(user_id).child('profile')
             doctor_data = doctor_ref.get()
             if doctor_data:
                 first_name = doctor_data.get('first_name', '')
                 last_name = doctor_data.get('last_name', '')
                 full_name = f"{first_name} {last_name}"
-                job_desc = doctor_data.get('job_desc')
-                self.ui.dr_desc.setText(job_desc)
+                clinic = doctor_data.get('clinic')
+                self.ui.dr_desc.setText(clinic)
                 self.ui.dr_name.setText(full_name)
 
     def view_btn_toggled(self):
@@ -157,7 +163,13 @@ def view_patients():
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     login = Login()
+    
     if login.exec_() == QDialog.Accepted:  # Only show main window if login successful
         window = MainWindow()
         window.show()
+        
+        # Connect the signal to reopen the login dialog after account creation
+        createacc = CreateAcc()
+        createacc.account_created.connect(login.show)
+
         sys.exit(app.exec())
