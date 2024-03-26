@@ -1,0 +1,21 @@
+{
+    "rules": {
+      ".read": "auth != null",
+      ".write": "auth != null",
+      "doctors": {
+        ".indexOn": ["email"], // Index on email for efficient querying
+        "$doctor_id": {
+          ".read": "auth != null && auth.uid == $doctor_id",
+          ".write": "auth != null && auth.uid == $doctor_id"
+        }
+      },
+      "patients": {
+        "$patient_id": {
+          ".read": "auth != null",
+          ".write": "auth != null"
+        }
+      }
+    }
+  }
+  
+  
