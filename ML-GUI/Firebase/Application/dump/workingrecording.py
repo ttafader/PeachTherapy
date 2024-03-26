@@ -1,31 +1,34 @@
 import sys
 from PyQt5 import QtWidgets, QtCore, QtGui, uic
-from PyQt5.QtWidgets import QDialog, QApplication, QMessageBox, QVBoxLayout, QWidget, QPushButton, QFileDialog, QHBoxLayout
+from PyQt5.QtWidgets import QDialog, QApplication, QScrollArea, QVBoxLayout, QWidget, QPushButton, QFileDialog, QHBoxLayout
 from PyQt5.QtCore import QUrl, QTimer, QPropertyAnimation, QEasingCurve
 from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
 from PyQt5.uic import loadUi
 from peach_therapy import Ui_MainWindow
 
 import numpy as np
+import speech_recognition as sr
+import io
 
 import pyqtgraph as pg
 from scipy.io import wavfile
+from scipy.io.wavfile import read
 
 import os, re, subprocess, firebase_admin, datetime, pyrebase
-from firebase_admin import credentials, db
-from firebase_admin import storage
+from firebase_admin import credentials, db, storage
 
 from mycredentials import firebase_init
 from mycredentials import pyrebase_config as config
 
 # cd C:\Users\tajmi\OneDrive\Documents\PeachTherapy\ML-GUI\Firebase\Sidebar
 # pyuic5.exe .\peach_therapy.ui -o .\peach_therapy.py
+# pyrcc5.exe .\resource.qrc -o .\resource_rc.py
 
 # Initialize Firebase Admin SDK
 cred = credentials.Certificate('firebasecredentials.json')
 firebase_admin.initialize_app(cred, firebase_init)
 
-cloud_storage_bucket = storage.bucket()
+# cloud_storage_bucket = storage.bucket()
 
 # Initialize Pyrebase
 firebase = pyrebase.initialize_app(config)
@@ -116,9 +119,13 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.ui.createprofile.clicked.connect(self.add_patients)
         self.ui.profilesuccess.setVisible(False)
+        self.ui.nopatients.setVisible(False)
+        self.ui.failed_patient.setVisible(False)
+        self.ui.loading.setVisible(False)
+        self.ui.savesuccess.setVisible(False)
+        self.ui.savefail.setVisible(False)
 
         self.profilecard_template = self.ui.profilecard  # Get the profilecard widget as template
-        self.ui.save_btn.clicked.connect(self.add_record)
 
         self.view_btn_toggled()
         # Get and set doctor's name
@@ -149,7 +156,46 @@ class MainWindow(QtWidgets.QMainWindow):
             return f"{first_name} {last_name}"
         else:
             return "Unknown"  # Return a default value if patient data is not found
+            
+    def convert_wav_to_text(self, wav_file):
+            # Read audio file
+            sample_rate, sample = read(wav_file)
 
+            # Generate a random array with the same length as the sample
+            myArray = np.random.randn(len(sample), 1)
+
+            # Format array values
+            array_str = ', '.join(f'{x[0]:0.4f}' for x in myArray)
+
+            # Write array values to a file-like object
+            output = io.StringIO()
+            output.write('[')
+            output.write(array_str)
+            output.write(']')
+            output.seek(0)  # Move cursor to the beginning of the "file"
+
+            # Get the content of the "file" as a string
+            text_data = output.getvalue()
+
+            # Close the "file-like" object
+            output.close()
+
+            # Return the content of the text file
+            return text_data
+
+    def upload_recording(self, filename, patient_id, file_url, text_data):
+        bucket = storage.bucket('peach-therapy.appspot.com')
+
+        wavblob = bucket.blob("patients/"+str(patient_id)+"/recordings/"+str(filename)+".wav")
+        wavblob.upload_from_filename(file_url)
+        wav_url = f"gs://{bucket.name}/{wavblob.name}"
+        
+        textblob = bucket.blob("patients/"+str(patient_id)+"/recordings/"+str(filename)+".txt")
+        textblob.upload_from_string(text_data)
+        txt_url=f"gs://{bucket.name}/{textblob.name}"
+
+        return wav_url, txt_url
+        
 #--------------------------VIEW PATIENTS--------------------------#
     def view_btn_toggled(self):
         self.ui.menuWidget.setCurrentIndex(0)
@@ -171,28 +217,46 @@ class MainWindow(QtWidgets.QMainWindow):
             first_page_layout = self.ui.viewWidget.widget(0).layout()  # Get the layout of the first page
 
             if first_page_layout is None:
-                first_page_layout = QtWidgets.QGridLayout()  # Use QGridLayout for a 3x3 grid
+                first_page_layout = QtWidgets.QGridLayout()  # Use QGridLayout for a flexible grid
                 self.ui.viewWidget.widget(0).setLayout(first_page_layout)
 
-            for idx, patient_id in enumerate(patient_ids):
-                row = idx // 3
-                col = idx % 3
+            if patient_ids:
+                num_columns = 3
+                num_patients = len(patient_ids)
+                num_rows = (num_patients + num_columns - 1) // num_columns  # Calculate number of rows needed
 
-                patient_data_ref = db.reference('patients').child(patient_id).child('profile')
-                patient_data = patient_data_ref.get()
-                if patient_data:
-                    # Construct patient's full name
-                    full_name = f"{patient_data.get('first_name', '')} {patient_data.get('last_name', '')}"
+                for idx, patient_id in enumerate(patient_ids):
+                    row = idx // num_columns
+                    col = idx % num_columns
 
-                    # Create a profile card widget for the patient
-                    profile_card = self.create_profile_card(full_name, patient_id)
+                    patient_data_ref = db.reference('patients').child(patient_id).child('profile')
+                    patient_data = patient_data_ref.get()
+                    if patient_data:
+                        # Construct patient's full name
+                        full_name = f"{patient_data.get('first_name', '')} {patient_data.get('last_name', '')}"
 
-                    # Add the profile card to the layout of the first page
-                    first_page_layout.addWidget(profile_card, row, col)
-                else:
-                    print(f"No data found for patient ID {patient_id} in the 'patients' node.")
+                        # Create a profile card widget for the patient
+                        profile_card = self.create_profile_card(full_name, patient_id)
+
+                        # Add the profile card to the layout of the first page
+                        first_page_layout.addWidget(profile_card, row, col)
+                    else:
+                        print(f"No data found for patient ID {patient_id} in the 'patients' node.")
+
+                # Add empty widgets to fill remaining space in the grid
+                for idx in range(num_rows * num_columns - num_patients):
+                    row = num_patients // num_columns + idx // num_columns
+                    col = num_patients % num_columns + idx % num_columns
+
+                    empty_widget = QtWidgets.QWidget()
+                    first_page_layout.addWidget(empty_widget, row, col)
+
+            else:
+                # No patients found for the doctor
+                self.ui.nopatients.setVisible(True)
         else:
             print("No user is currently logged in.")
+        
     
     def create_profile_card(self, full_name, patient_id):
         # Create a new instance of the profile card template
@@ -248,175 +312,8 @@ class MainWindow(QtWidgets.QMainWindow):
         return profile_card
 
 # patient_data_ref = db.reference('patients').child(patient_id).child('profile')
+    
 #----------------------PATIENT OVERVIEW------------------------#
-    def patient_overview(self, patient_id):
-        self.ui.viewWidget.setCurrentIndex(1)  # Move to the second page of viewwidget
-        print("Current Index of viewWidget:", self.ui.viewWidget.currentIndex())
-        print(patient_id)
-
-        patient_data_ref = db.reference('patients').child(patient_id).child('profile')
-        patient_data = patient_data_ref.get()
-        # Assuming labels exist in the second page with the names patientinfo_name, patientinfo_birthday, and patientinfo_sex
-        # Get patient information from patient_data node
-        first_name = patient_data.get('first_name', '')
-        last_name = patient_data.get('last_name', '')
-        name = f"{first_name} {last_name}"
-        patient_birthday = patient_data.get('birthday', '')
-        patient_sex = patient_data.get('sex', '')
-
-        # Update labels with patient information
-        self.ui.overview_title.setText(f"{first_name}'s Overview")
-        self.ui.name_ov.setText(f"Name: {name}")
-        self.ui.birthday_ov.setText(f"Birthday: {patient_birthday}")
-        self.ui.sex_ov.setText(f"Sex: {patient_sex}")
-
-        # Connect viewrec_btn to record_history function
-        self.ui.viewrec_btn.clicked.connect(self.record_history(patient_id))
-        self.ui.addrec_btn.clicked.connect(self.add_record_pg(patient_id))
-
-    def add_record_pg(self):
-        # Switch to the recording interface
-        self.ui.viewWidget.setCurrentIndex(3)
-        
-#---------------------------RECORD HISTORY----------------------#
-    def record_history(self, patient_id):
-        self.ui.viewWidget.setCurrentIndex(2)  # Move to the third page of viewwidget
-        self.populate_audio_recordings(patient_id)
-
-    def populate_audio_recordings(self, patient_id):
-        patient_id = 'pHvVAVElJAcFSj94ZTvxyjQrHT62'
-        # Clear existing audio widgets
-        layout = self.ui.viewWidget.widget(3).layout()
-        if layout:
-            while layout.count():
-                child = layout.takeAt(0)
-                if child.widget():
-                    child.widget().deleteLater()
-
-        # Retrieve patient recordings from Firebase
-        user = auth.current_user
-        if user:
-            user_id = user['localId']
-            recordings_ref = db.reference('patients').child(patient_id).child('recordings')
-            recordings = recordings_ref.get()
-            if isinstance(recordings, dict):  # Check if recordings is a dictionary
-                for recording_id, recording_url in recordings.items():
-                    # Create and add audio visual widget
-                    audio_visual = self.create_audio_visual('gs://peach-therapy.appspot.com/patients/pHvVAVElJAcFSj94ZTvxyjQrHT62/recordings/20240301121615.wav')
-                    layout.addWidget(audio_visual)
-            else:
-                print(f"No recordings found for patient ID {patient_id}")
-        else:
-            print("No user is currently logged in.")
-
-    def create_audio_visual(self, recording_url):
-        # Create the widget
-        audio_widget = QWidget()
-
-        # Create layout for the widget
-        layout = QHBoxLayout(audio_widget)
-
-        # Create media player for the widget
-        media_player = QMediaPlayer(audio_widget)
-
-        # Create buttons for the widget
-        play_button = QPushButton("Play")
-        load_button = QPushButton("Load")
-
-        # Create waveform plot for the widget
-        waveform_plot = pg.PlotWidget()
-        waveform_plot.setBackground('#FFBCA7')
-        waveform_plot.showGrid(False, False)
-        waveform_plot.getAxis('left').setPen(None)
-        waveform_plot.getAxis('bottom').setPen(None)
-        waveform_plot.getPlotItem().hideAxis('bottom')
-        waveform_plot.getPlotItem().hideAxis('left')
-
-        # Add buttons and waveform plot to the layout
-        layout.addWidget(play_button)
-        layout.addWidget(load_button)
-        layout.addWidget(waveform_plot)
-
-        # Connect buttons to slots
-        play_button.clicked.connect(lambda: self.toggle_play(media_player))
-        load_button.clicked.connect(lambda: self.load_audio(media_player, recording_url))
-
-        return audio_widget
-
-    def load_audio(self, media_player, url):
-        # Load audio file from URL
-        # Example implementation:
-        file_path = self.download_audio_file(url)
-        if file_path:
-            media_player.setMedia(QMediaContent(QUrl.fromLocalFile(file_path)))
-            self.sample_rate, self.audio_data = wavfile.read(file_path)
-            self.update_waveform()
-
-    def download_audio_file(self, url):
-        # Implement downloading audio file from URL
-        # Example implementation:
-        file_path = "downloaded_audio.wav"
-        # Download file from URL and save it to file_path
-        return file_path
-
-    def update_waveform(self):
-        if self.audio_data is not None and self.sample_rate is not None:
-            audio_duration = len(self.audio_data) / self.sample_rate
-            time_vector = np.linspace(0, audio_duration, len(self.audio_data))
-
-            # Resample audio data to a higher sampling rate
-            target_sampling_rate = 44100
-            resampled_time_vector = np.linspace(0, audio_duration, int(len(self.audio_data) * target_sampling_rate / len(time_vector)))
-            resampled_audio_data = np.interp(resampled_time_vector, time_vector, self.audio_data)
-
-            # Find maximum and minimum amplitude for each chunk
-            chunk_size = int(target_sampling_rate / 120)  # Use a chunk size of 10 ms
-            max_amplitudes = [max(resampled_audio_data[i:i+chunk_size]) for i in range(0, len(resampled_audio_data), chunk_size)]
-
-            # Determine the overall maximum amplitude
-            overall_max = max(max_amplitudes)
-
-            # Set y-range to include only positive values
-            self.waveform_plot.setYRange(0, overall_max)
-
-            self.waveform_plot.clear()
-            for i in range(len(max_amplitudes)):
-                self.waveform_plot.plot(
-                    [resampled_time_vector[i], resampled_time_vector[i]],
-                    [0, max(0, max_amplitudes[i])],
-                    pen={'color': 'w', 'width': 3}  # Adjust the width as needed
-                )
-
-    def toggle_play(self, media_player):
-        if media_player.state() == QMediaPlayer.PlayingState:
-            media_player.pause()
-            self.play_button.setText("Play")
-            self.timer.stop()  # Stop the timer when playback is paused
-        else:
-            media_player.play()
-            self.play_button.setText("Pause")
-            # Calculate interval between color changes based on remaining audio duration
-            total_duration = len(self.audio_data) / self.sample_rate
-            current_position = media_player.position() / 1000  # Current position in seconds
-            remaining_duration = total_duration - current_position
-            # Adjust the scaling factor based on the total duration
-            scaling_factor = 1 - np.log10(total_duration) / 10  # Adjust as needed
-            # Ensure scaling factor is within reasonable bounds
-            scaling_factor = max(0.1, min(1.0, scaling_factor))
-            interval_ms = (remaining_duration * 1000) / len(self.waveform_plot.plotItem.listDataItems()) * scaling_factor
-            self.timer.timeout.connect(self.change_line_color)
-            self.timer.start(interval_ms)  # Start the timer with calculated interval
-
-    def change_line_color(self):
-        # Change the color of the line at the current index
-        if self.color_index < len(self.waveform_plot.plotItem.listDataItems()):
-            pen = pg.mkPen(color='#d0a08c', width=3)  # Create a pen with white color
-            self.waveform_plot.plotItem.listDataItems()[self.color_index].setPen(pen)
-            self.color_index += 1
-        else:
-            self.timer.stop()  # Stop the timer when
-
-#-------------------------ADD RECORDING-------------------------#
     def patient_overview(self, patient_id):
         self.ui.viewWidget.setCurrentIndex(1)  # Move to the second page of viewwidget
         print("Current Index of viewWidget:", self.ui.viewWidget.currentIndex())
@@ -442,17 +339,16 @@ class MainWindow(QtWidgets.QMainWindow):
         # Connect viewrec_btn to record_history function
         self.ui.viewrec_btn.clicked.connect(self.record_history)
         self.ui.addrec_btn.clicked.connect(lambda: self.add_record(patient_id))
+        
+#---------------------------RECORD HISTORY----------------------#
+    def record_history(self, patient_id):
+        self.ui.viewWidget.setCurrentIndex(2)  # Move to the third page of viewwidget
+        self.populate_audio_recordings(patient_id)
 
-
+#-------------------------ADD RECORDING-------------------------#
     def add_record(self, patient_id):
-        if not patient_id:
-            print("Error: Invalid patient ID.")
-            return
 
-        # Move to the third page of viewwidget
         self.ui.viewWidget.setCurrentIndex(3)
-
-        # Get current date
         current_date = QtCore.QDate.currentDate().toString(QtCore.Qt.ISODate)
 
         # Update labels with patient information
@@ -469,29 +365,93 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.rec_patient.setText(name)
         self.ui.rec_date.setText(current_date)
 
+        self.ui.startrec_btn.clicked.connect(self.start_recording)
+        self.ui.stoprec_btn.clicked.connect(self.stop_recording)
+        self.ui.playback_btn.clicked.connect(self.playback_recording)
+        self.ui.redo_btn.clicked.connect(self.redo_recording)
+        self.ui.save_btn.clicked.connect(lambda: self.analyze_save_recording(patient_id))  # Assuming patient_id is available
+
+    def analyze_save_recording(self, patient_id):
         phrase = self.ui.recphrase.text()
         notes = self.ui.recnotes.text()
-
-        user = auth.current_user
-        if user:
-            user_id = user['localId']
-            # Get a reference to the 'patients -> patient_id -> recordings -> current_date' path in Firebase
-            recordings_ref = db.reference('patients').child(patient_id).child('recordings').child(current_date)
-
-            # Assuming recording_url contains the URL of the recording to be stored
-            recording_url = 'https://example.com/recording.wav'  # Replace this with the actual recording URL
+        self.ui.loading.setVisible(True)
+        recording_file, _ = QFileDialog.getOpenFileName(self, "Select Recording File", "", "Audio Files (*.wav *.mp3 *.ogg)")
+        if recording_file:
+            print("Selected file:", recording_file)
+            print("Received patient_id:", patient_id)  # Print the patient_id received
+            
+            # Get current date
+            current_datetime = QtCore.QDateTime.currentDateTime()
+            formatted_datetime = current_datetime.toString("yyyyMMddTHHmmss")
 
             # Generate a unique key for the recording under 'patients -> patient_id -> recordings -> current_date'
-            new_recording_ref = recordings_ref.push()
+            recordings_ref = db.reference('patients').child(patient_id).child('recordings').child(formatted_datetime)
+            text_data = self.convert_wav_to_text(recording_file)
 
-            # Store the recording URL under the unique key
-            new_recording_ref.set({
-                "url": recording_url,
-                "phrase": phrase,
-                "doctor_note": notes
-            })
+            # Run diagnosis script
+            try:
+                
+                result = subprocess.run(['python', 'ku_test.py', recording_file], capture_output=True, text=True, check=True)
+                diagnosis_result = result.stdout.strip()  # Get the diagnosis result from the subprocess output
+                print("Diagnosis completed successfully:", diagnosis_result,"%")
+
+                wav_url, txt_url = self.upload_recording(
+                    filename=formatted_datetime, 
+                    patient_id=patient_id, 
+                    file_url=recording_file, 
+                    text_data=text_data
+                )
+        
+                # Store the recording URL under the unique key
+                recordings_ref.set({
+                    "confidence": diagnosis_result,
+                    "date_recorded" : formatted_datetime,
+                    "phrase": phrase,
+                    "doctor_note": notes,
+                    "wav_url": wav_url,
+                    "text_url" : txt_url
+                })
+                
+                self.ui.savesuccess.setVisible(True)
+                self.clear_record_fields()
+                # Schedule hiding of the success message after 5 seconds
+                QTimer.singleShot(5000, self.hide_save_message)
+
+            except subprocess.CalledProcessError as e:
+                print("Error running diagnosis script:", e)
+                diagnosis_result = -99
+            except Exception as e2: 
+                print("Recording not saved", e2)
+                self.ui.savefail.setVisible(True)
+            finally:
+            # Hide loading indicator after execution
+                self.ui.loading.setVisible(False)
+                
         else:
             print("No user is currently logged in.")
+            pass
+
+    def clear_record_fields(self):
+        self.ui.recphrase.clear()
+        self.ui.recnotes.clear()
+    
+    def hide_save_message(self):
+        self.ui.savesuccess.setVisible(False)
+
+    def start_recording(self):
+        pass
+
+    def stop_recording(self):
+        # Add stop recording logic here
+        pass
+
+    def playback_recording(self):
+        # Add playback recording logic here
+        pass
+
+    def redo_recording(self):
+        # Add redo recording logic here
+        pass
 
 #--------------------------ADD PATIENTS--------------------------#
     def add_btn_toggled(self):
@@ -501,52 +461,71 @@ class MainWindow(QtWidgets.QMainWindow):
         email_patient = self.ui.email_patient.text()
         first_name_patient = self.ui.firstname_patient.text()
         last_name_patient = self.ui.lastname_patient.text()
-        
-        # Get the selected birthday from the QDateEdit widget
         birthday = self.ui.birthday.date().toString(QtCore.Qt.ISODate)
-        
-        selected_sex_index = self.ui.patientdropdown.currentIndex()
-        sex = self.ui.patientdropdown.itemData(selected_sex_index)
+        sex = self.ui.sexdropdown.currentText()
 
         user = auth.current_user
         if user:
             user_id = user['localId']
-            # Get a reference to the 'doctors -> patients' node in Firebase
+            doctor_data = db.reference('doctors').child(user_id).child('profile').get()
+            full_dr = f"{doctor_data.get('first_name', '')} {doctor_data.get('last_name', '')}"
+            default_password = "Peach123"
+
+            # Create user account with default password and obtain the generated UID
+            try:
+                auth_data = auth.create_user_with_email_and_password(email_patient, default_password)
+                patient_id = auth_data['localId']  # Get the UID generated for the patient
+            except Exception as e:
+                print("Failed to create patient account:", e)
+                # Optionally handle the error, e.g., show a message to the user
+                return
+
+            # Store the patient data under the generated UID in 'patients' node
             doctor_ref = db.reference('doctors').child(user_id).child('patients')
+            num_patients = len(doctor_ref.get() or {})
+            doctor_ref.child(str(num_patients)).set(patient_id)
 
-            # Generate a new unique key for the patient under 'doctors -> patients'
-            new_patient_ref = doctor_ref.push()
-
-            # Get the unique key generated by push()
-            patient_id = new_patient_ref.key
-
-            # Store the patient data under the unique patient ID in 'patients' node
             patient_data_ref = db.reference('patients').child(patient_id).child('profile')
             patient_data_ref.set({
                 "first_name": first_name_patient,
                 "last_name": last_name_patient,
                 "birthday": birthday,
                 "email": email_patient,
+                "doctor_id": user_id,
+                "doctor_name": full_dr,
                 "sex": sex,
-                "user_type": 2
+                "user_type": 2,
+                "patient_id": patient_id
             })
 
-        self.ui.profilesuccess.setVisible(True)
-        default_date = QtCore.QDate(2000, 1, 1)
+            # create folders in gcs for patient
+            fileName = "emptyfile.txt"
+            bucket = storage.bucket('peach-therapy.appspot.com')
+            blob = bucket.blob("patients/"+str(patient_id)+"/recordings/"+fileName)
+            blob.upload_from_filename(fileName)
+            
+            # Show success message
+            self.ui.profilesuccess.setVisible(True)
+            # Clear inputted data from the text boxes
+            self.clear_input_fields()
+            # Schedule hiding of the success message after 3 seconds
+            QTimer.singleShot(3000, self.hide_success_message)
+        else:
+            print("No user is currently logged in.")
 
-        # Clear inputted data from the text boxes
+
+    def clear_input_fields(self):
         self.ui.email_patient.clear()
         self.ui.firstname_patient.clear()
         self.ui.lastname_patient.clear()
         self.ui.patientdropdown.setCurrentIndex(0)  # Assuming index 0 is the default option
-        self.ui.birthday.setSelectedDate(default_date)
-
-        # Schedule hiding of the success message after 3 seconds
-        QTimer.singleShot(3000, self.hide_success_message)
+        self.ui.birthday.setDate(QtCore.QDate(2000, 1, 1))
 
     def hide_success_message(self):
         self.ui.profilesuccess.setVisible(False)
 
+
+        
 #--------------------------APPOINTMENTS--------------------------#
     def apt_btn_toggled(self):
         self.ui.menuWidget.setCurrentIndex(2)
