@@ -12,10 +12,14 @@ import Notifications from '../screens/Notifications';
 import Calendar from '../screens/Calendar';
 import DonutChart from '../screens/DonutChart';
 import DemoScreen from '../screens/DemoScreen';
-import Statistics from '../screens/Statistics';
+// import PatientsGallery from '../screens/PatientsGallery';
 import WaveFormDetails from '../screens/WaveFormDetails';
-import AudioScreen from '../screens/AudioScreen';
-import DropdownComponent from '../screens/DropdownComponent';
+// import AudioScreen from '../screens/AudioScreen';
+import DropdownComponent from '../screens/waste/DropdownComponent';
+import PatientsGallery from '../screens/PatientsGallery';
+import ClinicianMenu from '../screens/ClinicianMenu';
+import PatientDetailsScreen from '../screens/PatientDetailsScreen';
+import ProfileComp from '../components/ProfileComp';
 
 const Stack = createNativeStackNavigator();
 
@@ -28,6 +32,8 @@ export function MyStack() {
                 headerShown: false,
                 animation: 'none'
             }}
+
+            initialRouteName="ProfileComp"
         >
             <Stack.Screen
                 name='Demo'
@@ -50,6 +56,26 @@ export function MyStack() {
                 options={{ title: 'Waveform' }}
             />
             <Stack.Screen
+                name='PatientsGallery'
+                component={PatientsGallery}
+                options={{ title: 'PatientsGallery' }}
+            />
+            <Stack.Screen
+                name='ProfileComp'
+                component={ProfileComp}
+                options={{ title: 'ProfileComp' }}
+            />
+            <Stack.Screen
+                name='PatientDetailsScreen'
+                component={PatientDetailsScreen}
+                options={{ title: 'PatientDetailsScreen' }}
+            />
+            <Stack.Screen
+                name='ClinicianMenu'
+                component={ClinicianMenu}
+                options={{ title: 'ClinicianMenu' }}
+            />
+            <Stack.Screen
                 name='WaveFormDetails'
                 component={WaveFormDetails}
                 options={{ title: 'WaveFormDetails' }}
@@ -59,11 +85,11 @@ export function MyStack() {
                 component={AccountSettings}
                 options={{ title: 'Account' }}
             />
-            <Stack.Screen
+            {/* <Stack.Screen
                 name='AudioScreen'
                 component={AudioScreen}
                 options={{ title: 'AudioScreen' }}
-            />
+            /> */}
             <Stack.Screen
                 name='DonutChart'
                 component={DonutChart}
@@ -94,11 +120,11 @@ export function MyStack() {
                 component={Calendar}
                 options={{ title: 'Calendar' }}
             />
-            <Stack.Screen
+            {/* <Stack.Screen
                 name='DropdownComponent'
                 component={DropdownComponent}
                 options={{ title: 'DropdownComponent' }}
-            />
+            /> */}
 
         </Stack.Navigator>
     )

@@ -1,12 +1,19 @@
 import React, { Component } from 'react';
-import { Alert, Button, Pressable, TouchableHighlight, StyleSheet, Text, View, Image, TextInput, SafeAreaView } from 'react-native';
-
+import { Alert, Button, Linking, Pressable, TouchableHighlight, StyleSheet, Text, View, Image, TextInput, SafeAreaView, TouchableOpacity } from 'react-native';
 
 export default function WelcomeScreen({ navigation, props }) {
   function buttonClicked() {
     navigation.navigate('Login')
 
   }
+
+  function goToWebsite() {
+    const url = 'https://nazifamahbub.myportfolio.com/';
+
+    Linking.openURL(url)
+      .catch(err => console.error('An error occurred', err));
+  }
+
 
   return (
     <SafeAreaView style={styles.container}>
@@ -15,17 +22,17 @@ export default function WelcomeScreen({ navigation, props }) {
         <Image source={require('../assets/peeach.png')}
           style={styles.logo}
         />
-        <Text style={styles.title} numberOfLines={1}> Peach Therapy </Text>
+        <Text style={styles.title}>{'Peach\nTherapy'}</Text>
       </View>
 
 
       {/* fix this button */}
-      <Pressable style={styles.button} onPress={() => buttonClicked()}>
+      <TouchableOpacity style={styles.button} onPress={() => buttonClicked()}>
         <Text style={styles.text}>Login</Text>
-      </Pressable>
-      <TouchableHighlight color="" style={styles.visitOurWebsite} onPress={() => buttonClicked()} title="Visit Our Website">
+      </TouchableOpacity>
+      <TouchableOpacity color="" style={styles.visitOurWebsite} onPress={() => goToWebsite()} title="Visit Our Website">
         <Text style={styles.visitText}>Visit Our Website </Text>
-      </TouchableHighlight>
+      </TouchableOpacity>
     </SafeAreaView>
   );
 }
@@ -58,12 +65,12 @@ const styles = StyleSheet.create({
 
   title: {
     color: '#FFA386',
-    fontSize: 33,
+    fontSize: 38,
     fontWeight: '700',
     textTransform: 'capitalize',
-    lineHeight: 33,
+    lineHeight: 40,
     letterSpacing: 0.66,
-    // wordWrap: 'break-word',
+    textAlign: 'center',
     marginTop: -40,
   },
   loginButton: {
@@ -76,7 +83,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   visitOurWebsite: {
-
     width: 'auto',
     height: 50,
     backgroundColor: '#FFF6F4',
@@ -87,8 +93,8 @@ const styles = StyleSheet.create({
     marginBottom: 100,
     justifyContent: "center",
     alignItems: "center",
-    paddingLeft: 20,
-    paddingRight: 20,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
   },
   container: {
     flex: 1,
@@ -121,10 +127,9 @@ const styles = StyleSheet.create({
     // Visit Our Website
     color: '#FFA386',
     fontSize: 18,
-    fontWeight: '500',
-    lineHeight: 17.30,
+
     letterSpacing: 1.26,
-    // wordWrap: 'break-word',
+    fontWeight: '500',
   }
 
 });

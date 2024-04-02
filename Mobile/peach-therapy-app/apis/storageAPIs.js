@@ -15,9 +15,13 @@ export async function getTextFileFromStorage(url) {
         if (!response.ok) {
             throw new Error('Failed to fetch the text file');
         }
-        const text = await response.text();
-        const lines = text.split('\n');
-        return lines;
+
+        const resptext = await response.text();
+        const lines = resptext.replace('[', '').replace(']', '').split(', ');
+
+        const decimalArray = lines.map(str => parseFloat(str));
+
+        return decimalArray;
     } catch (error) {
         console.error('Error fetching text file:', error);
         return [];

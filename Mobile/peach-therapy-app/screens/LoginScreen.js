@@ -1,100 +1,154 @@
-import React, { Component, useState } from 'react';
-import { Alert, ActivityIndicator, Button, TouchableHighlight, StyleSheet, Text, KeyboardAvoidingView, View, Image, TextInput, SafeAreaView, AreaChart, Pressable } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { Alert, ScrollView, ActivityIndicator, Pressable, StyleSheet, Text, View, Image, TextInput, KeyboardAvoidingView, Keyboard, RefreshControl } from 'react-native';
 import { signin } from '../apis/authenticationAPIs';
+import BackButton from '../components/BackButton';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { getUserDetails } from '../apis/authenticationAPIs';
 
-export default function LoginScreen({ navigation, props }) {
-  const [username, setUsername] = useState('')
-  const [password, setPassword] = useState('')
-  const [signinError, setSigninError] = useState(0)
-  const [loading, setLoading] = useState(false)
-  // function buttonClicked() {
-  //   navigation.navigate('Account')
-  // }
-  async function buttonClicked() {
-    setLoading(true)
-    await signin(username, password).then(code => {
-      setSigninError(code)
-      setLoading(false)
-      console.log(code)
+export default function LoginScreen({ navigation }) {
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [signinError, setSigninError] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [keyboardVisible, setKeyboardVisible] = useState(false);
+  const [user, setUser] = useState({});
+  const [refreshing, setRefreshing] = useState(false);
+  const [scrollPosition, setScrollPosition] = useState(0);
 
-      if (code == 1) {
-        navigation.navigate("Account")
-      }
-    })
+  const handleScroll = (event) => {
+    const currentScrollPosition = event.nativeEvent.contentOffset.y;
+    setScrollPosition(currentScrollPosition);
+  };
+
+  useEffect(() => {
+    loadUserData();
+  }, []);
+
+  const loadUserData = async () => {
+    setUser(await getUserDetails());
   }
 
-  return (
-    <KeyboardAvoidingView behavior="padding" style={styles.container}>
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await loadUserData();
+    setRefreshing(false);
 
-      <View style={styles.titleAndLogo}>
-        <Image source={require('../assets/peeach.png')}
-          style={styles.logo}
-        />
-        <Text style={styles.title}>{'Peach\nTherapy'}</Text>
-      </View>
+    setUsername('');
+    setPassword('');
+    setSigninError(0);
+  };
 
-      {
-        signinError < 0 && (
-          signinError === -1 ?
-            <Text style={styles.errorMessage}>Login Error: Username Incorrect</Text>
-            : signinError === -2 ?
-              <Text style={styles.errorMessage}>Login Error: Password Incorrect</Text>
-              :
-              <Text style={styles.errorMessage}>Login Error: Unknown Error</Text>
-        )
+  useEffect(() => {
+    return () => {
+      setRefreshing(false);
+    };
+  }, []);
+
+  useEffect(() => {
+    const keyboardDidShowListener = Keyboard.addListener(
+      'keyboardDidShow',
+      () => {
+        setKeyboardVisible(true);
       }
+    );
+    const keyboardDidHideListener = Keyboard.addListener(
+      'keyboardDidHide',
+      () => {
+        setKeyboardVisible(false);
+      }
+    );
 
-      <Text style={styles.placeholderCaptions}>
-        Username
-      </Text>
-      <TextInput
-        style={
-          signinError === -1 ? [
-            styles.errorInput,
-            styles.errorPlaceholderText
-          ] : [
-            styles.writingInput,
-            styles.placeholderText
-          ]
-        }
-        placeholder="eg. johndoe@email.com"
-        textAlignVertical="top"
-        underlineColorAndroid="transparent"
-        onChangeText={(e) => setUsername(e)}
-      />
-      <Text style={styles.placeholderCaptions}>
-        Password
-      </Text>
-      <TextInput
-        style={
-          signinError === -2 ? [
-            styles.errorInput,
-            styles.errorPlaceholderText
-          ] : [
-            styles.writingInput,
-            styles.placeholderText
-          ]
-        }
-        secureTextEntry={true}
-        placeholder="eg. Peach123* "
-        onChangeText={(e) => setPassword(e)}
-      />
+    return () => {
+      keyboardDidShowListener.remove();
+      keyboardDidHideListener.remove();
+    };
+  }, []);
 
-      <Pressable disabled={loading} style={styles.button} onPress={() => buttonClicked()}>
-        {loading ?
-          <ActivityIndicator size={'small'} color={'#FFFFFF'} />
-          :
-          <Text style={styles.text}>Login</Text>
+  async function buttonClicked() {
+    setLoading(true);
+    await signin(username, password).then(code => {
+      setSigninError(code);
+      setLoading(false);
+
+      if (code === 1) {
+        navigation.navigate("Account");
+      }
+    });
+  }
+
+  const logoStyle = keyboardVisible ? { width: 150, height: 150 } : { width: 300, height: 300 };
+  const titleStyle = keyboardVisible ? { fontSize: 20, lineHeight: 20, marginTop: -30 } : { fontSize: 33, lineHeight: 33 };
+
+  return (
+    <KeyboardAvoidingView behavior="padding" style={styles.container} >
+      <ScrollView style={{ flex: 1, width: '100%' }}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            colors={['#FFA386']}
+          />
         }
-      </Pressable>
-      <Pressable onPress={() => Alert.alert('This Button Changes Password')}>
-        <Text style={styles.forgotPassword}>Forgot Password</Text>
-      </Pressable>
+        onScroll={handleScroll}
+        scrollEventThrottle={16}
+      >
+        <View style={{
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          paddingTop: 40,
+        }}>
+          <View style={styles.titleAndLogo}>
+            <Image source={require('../assets/peeach.png')} style={[styles.logo, logoStyle]} />
+            <Text style={[styles.title, titleStyle]}>{'Peach Therapy'}</Text>
+          </View>
+          {
+            signinError < 0 && (
+              signinError === -1 ? (
+                <Text style={styles.errorMessage}>Login Error: Username Incorrect</Text>
+              ) : signinError === -2 ? (
+                <Text style={styles.errorMessage}>Login Error: Password Incorrect</Text>
+              ) : (
+                <Text style={styles.errorMessage}>Login Error: Unknown Error</Text>
+              )
+            )
+          }
+          <Text style={styles.placeholderCaptions}>Username</Text>
+          <TextInput
+            style={signinError === -1 ? [styles.errorInput, styles.errorPlaceholderText] : [styles.writingInput, styles.placeholderText]}
+            placeholder="eg. johndoe@email.com"
+            textAlignVertical="top"
+            underlineColorAndroid="transparent"
+            onChangeText={(e) => setUsername(e)}
+            value={username}
+          />
+          <Text style={styles.placeholderCaptions}>Password</Text>
+          <TextInput
+            style={signinError === -2 ? [styles.errorInput, styles.errorPlaceholderText] : [styles.writingInput, styles.placeholderText]}
+            secureTextEntry={true}
+            placeholder="eg. Peach123* "
+            onChangeText={(e) => setPassword(e)}
+            value={password}
+          />
+
+          <Pressable disabled={loading} style={styles.button} onPress={() => buttonClicked()}>
+            {loading ?
+              <ActivityIndicator size={'small'} color={'#FFFFFF'} />
+              :
+              <Text style={styles.text}>Login</Text>
+            }
+          </Pressable>
+          <Pressable onPress={() => Alert.alert('This Button Changes Password')}>
+            <Text style={styles.forgotPassword}>Forgot Password</Text>
+          </Pressable>
+          {/* 
+          <SafeAreaView style={styles.backButtonContainer}>
+            <BackButton navigation={navigation} colorBG={'#FFC1AD'}></BackButton>
+          </SafeAreaView> */}
+        </View>
+      </ScrollView>
     </KeyboardAvoidingView>
   );
 }
-
-
 
 
 const styles = StyleSheet.create({
@@ -105,7 +159,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 32,
     elevation: 3,
     width: '50%',
-
+    marginBottom: 20,
     backgroundColor: '#FFA386',
     borderRadius: 10,
 
@@ -128,7 +182,8 @@ const styles = StyleSheet.create({
     lineHeight: 33,
     letterSpacing: 0.66,
     // wordWrap: 'break-word',
-    marginTop: -60,
+    marginTop: -80,
+    marginBottom: 40,
     textAlign: 'center',
   },
 
@@ -142,16 +197,10 @@ const styles = StyleSheet.create({
   },
 
   forgotPassword: {
-    // Login
     color: '#FFA386',
-    fontSize: 16,
-    //fontWeight: '500',
-    lineHeight: 24,
-    letterSpacing: 1.26,
-    // wordWrap: 'break-word',
+    fontSize: 14,
+    fontWeight: '700',
     textDecorationLine: 'underline',
-    marginBottom: 100,
-    marginTop: 20,
   },
 
   writingInput: {
@@ -189,11 +238,10 @@ const styles = StyleSheet.create({
     lineHeight: 18.5, /* 142.308% */
     letterSpacing: 0.585,
   },
-
   container: {
     flex: 1,
     backgroundColor: '#FFF6F4',
-    justifyContent: "flex-end",
+    justifyContent: "space-between",
     alignItems: "center",
   },
   logo: {
@@ -202,12 +250,16 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   titleAndLogo: {
-    flex: 1,
-    //top: 70,
     justifyContent: "center",
+    marginTop: 50, // Increase marginTop to prevent the top of the image being cut off
     alignItems: "center",
+    marginBottom: 20, // Reduce marginBottom to create a more balanced spacing
+    // backgroundColor: 'black'
   },
-
+  backButtonContainer: {
+    width: 150,
+    marginBottom: 10, // Reduce marginBottom to reduce the space around the BackButton
+  },
 
   placeholderText: {
     color: '#24A8AC',

@@ -3,7 +3,7 @@ import { Image, StyleSheet, Text, View } from 'react-native'
 import { getUserDetails } from '../apis/authenticationAPIs'
 import { getPerson } from '../utilities/database_functions'
 
-export default function ProfileHeader({ colorBG }) {
+export default function ClinicianHeader({ colorBG }) {
     const [user, setUser] = useState({})
 
     const [doctorName, setDoctorName] = useState("")
@@ -25,7 +25,6 @@ export default function ProfileHeader({ colorBG }) {
     useEffect(() => {
         async function loadUserData() {
             const temp = await getUserDetails();
-            // const temp = user;
             setUser(temp);
             const doctorDetails = await getDoctorDetails(temp.profile.doctor_id);
             // console.log("Doctor Details:", doctorDetails);
@@ -40,10 +39,10 @@ export default function ProfileHeader({ colorBG }) {
             const tempArray = await getPerson(1, uid);
             const temp = tempArray[0]; // Access the first element of the array
             // console.log("Doctor Temp:", temp);
-            console.log(uid)
-            if (temp && temp.profile && temp.profile.first_name && temp.profile.last_name) {
+            if (temp && temp.profile && temp.profile.first_name && temp.profile.last_name && temp.profile.clinic) {
                 return {
                     doctorName: temp.profile.first_name + " " + temp.profile.last_name,
+                    clinic: temp.profile.clinic
                 };
             } else {
                 return { doctorName: "Unknown", clinic: "Unknown" };

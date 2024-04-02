@@ -1,9 +1,25 @@
-import React, { Component, useEffect } from 'react';
+import React, { Component, useEffect, useState } from 'react';
 import { Alert, Button, TouchableHighlight, StyleSheet, Text, View, Image, TextInput, SafeAreaView, AreaChart, Pressable, ScrollView } from 'react-native';
 import { isUserSignedIn } from '../apis/authenticationAPIs';
 import ProfileHeader from '../components/ProfileHeader';
+//for conditionals
+import PatientNavComp from '../components/PatientNavComp';
+import ClinicianNavComp from '../components/ClinicianNavComp';
+import { getUserDetails } from '../apis/authenticationAPIs'
+import BackButton from '../components/BackButton';
 
 export default function Notifications({ navigation, props }) {
+  //for condiitonals
+  const [user, setUser] = useState({});
+  useEffect(() => {
+
+    if (!isUserSignedIn()) navigation.replace("Login");
+    async function loadUserData() {
+      setUser(await getUserDetails())
+    }
+    loadUserData()
+  }, [])
+
   useEffect(() => {
     if (!isUserSignedIn()) navigation.replace("Login")
   })
@@ -26,38 +42,14 @@ export default function Notifications({ navigation, props }) {
   return (//all
     <ScrollView style={styles.wholePage}>
       <View style={styles.navBar}>
-        <SafeAreaView style={styles.container}>
-          <Pressable onPress={() => goToRecordings()}>
-            <Image source={require('../assets/Vector-4.png')}
-              style={styles.icon}
-            />
-          </Pressable>
-          <Pressable onPress={() => goToChart()}>
-            <Image source={require('../assets/Vector.png')}
-              style={styles.icon}
-            />
-          </Pressable>
-          <Pressable onPress={() => goToCalendar()}>
-            <Image source={require('../assets/Vector-1.png')}
-              style={styles.icon}
-            />
-          </Pressable>
 
-          <Pressable style={styles.navSelect} >
-            <Image source={require('../assets/bellselect.png')} style={styles.icon} />
-          </Pressable>
+        {user?.profile?.user_type === 1 && <ClinicianNavComp navigation={navigation} colorBG={'#FFA386'} />}
+        {user?.profile?.user_type === 2 && <PatientNavComp navigation={navigation} colorBG={'#FFA386'} />}
 
-          <Pressable onPress={() => buttonClicked()}>
-            <Image source={require('../assets/man.png')}
-              style={styles.icon}
-            />
-          </Pressable>
-
-        </SafeAreaView>
       </View>
-      <ProfileHeader />
+      <ProfileHeader colorBG={'#FFA386'} />
 
-
+      <BackButton navigation={navigation} colorBG={'#FFA386'}></BackButton>
       <View style={styles.pageContainer}>
 
         <Text style={styles.title}>
@@ -112,7 +104,7 @@ export default function Notifications({ navigation, props }) {
         <View style={styles.oldNotif} >
           <Text style={styles.accentButtonText}>Older Notifications</Text>
 
-          <View style={{ backgroundColor: '#FFFAF9', borderColor: '#F08462', borderWidth: 1, padding: 20, borderRadius: 10, textAlign: 'left', opacity: '80%', marginBottom: 20, width: "100%" }}>
+          <View style={{ backgroundColor: '#FFFAF9', borderColor: '#F08462', borderWidth: 1, padding: 20, borderRadius: 10, textAlign: 'left', marginBottom: 20, width: "100%" }}>
 
             <View>
               <Text style={{
@@ -148,7 +140,7 @@ export default function Notifications({ navigation, props }) {
 
             }}>Canceled the upcoming appointment on Dec 19th.</Text>
           </View>
-          <View style={{ backgroundColor: '#FFFAF9', borderColor: '#FFA386', borderWidth: 1, padding: 20, borderRadius: 10, textAlign: 'left', opacity: '80%', marginBottom: 20, width: '100%' }}>
+          <View style={{ backgroundColor: '#FFFAF9', borderColor: '#FFA386', borderWidth: 1, padding: 20, borderRadius: 10, textAlign: 'left', marginBottom: 20, width: '100%' }}>
 
             <View>
               <Text style={{
@@ -183,7 +175,7 @@ export default function Notifications({ navigation, props }) {
               textAlign: 'left',
             }}>Has transferred you to Dr. Tajmina Tafader.</Text>
           </View>
-          <View style={{ backgroundColor: '#FFFAF9', borderColor: '#F08462', borderWidth: 1, padding: 20, borderRadius: 10, textAlign: 'left', opacity: '80%', width: '100%' }}>
+          <View style={{ backgroundColor: '#FFFAF9', borderColor: '#F08462', borderWidth: 1, padding: 20, borderRadius: 10, textAlign: 'left', width: '100%' }}>
 
             <View>
               <Text style={{
@@ -242,7 +234,7 @@ const styles = StyleSheet.create({
   navBar: {
     height: 120,
     backgroundColor: '#FFA386',
-    paddingHorizontal: 15,
+    // paddingHorizontal: 15,
   },
   icon: {
     width: 25,
@@ -374,7 +366,6 @@ const styles = StyleSheet.create({
     // wordWrap: 'break-word',
     textAlign: 'left',
     marginBottom: 40,
-    opacity: '40%',
 
   },
 
