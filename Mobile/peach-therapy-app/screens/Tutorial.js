@@ -2,6 +2,7 @@ import React, { Component, useEffect } from 'react';
 import { Alert, Button, TouchableHighlight, StyleSheet, Text, View, Image, TextInput, SafeAreaView, AreaChart, Pressable, ScrollView } from 'react-native';
 import { isUserSignedIn } from '../apis/authenticationAPIs';
 import ProfileHeader from '../components/ProfileHeader';
+import BackButton from '../components/BackButton';
 
 export default function Tutorial({ navigation, props }) {
 
@@ -51,8 +52,8 @@ export default function Tutorial({ navigation, props }) {
           </Pressable>
         </SafeAreaView>
       </View>
-      <ProfileHeader />
-
+      <ProfileHeader colorBG={'#24A8AC'} />
+      <BackButton navigation={navigation} colorBG={'#24A8AC'}></BackButton>
 
       <View style={styles.pageContainer}>
 
@@ -237,7 +238,7 @@ const styles = StyleSheet.create({
   navBar: {
     height: 120,
     backgroundColor: '#24A8AC',
-    paddingHorizontal: 15,
+    // paddingHorizontal: 15,
   },
   icon: {
     width: 25,

@@ -2,48 +2,58 @@ import React, { useEffect, useState, Component } from 'react'
 import { Audio } from 'expo-av';
 import { getUserDetails, isUserSignedIn } from '../apis/authenticationAPIs'
 import { getPerson } from '../utilities/database_functions'
-import { Text, TouchableHighlight, SafeAreaView, StyleSheet, Pressable, View, Image, ScrollView, Button } from 'react-native';
+import { Text, TouchableHighlight, SafeAreaView, StyleSheet, Pressable, View, Image, ScrollView, Button, TouchableOpacity } from 'react-native';
 import moment from 'moment';
 import { getTextFileFromStorage, getWavFileFromStorage } from '../apis/storageAPIs';
-// import { audiodataarray } from './audioData';
+import { audiodataarray } from '../screens/waste/audioData';
+import WaveformComp from './WaveformComp';
 // import { getAllDoctorsData, getAllPatientsData } from "../apis/databaseAPIs";
 
 
-export default function AudioComp({ recording, idx }) {
+export default function AudioComp({ navigation, recording, idx }) {
     const [user, setUser] = useState({})
 
-    const [normalizedAudio, setNormalizedAudio] = useState([])
-    const [heighestAmp, setHeighestAmp] = useState(0)
-    const [playing, setPlaying] = useState(false)
     const [sound, setSound] = useState();
+    const [soundData, setSoundData] = useState();
     const [showDetails, setShowDetails] = useState(false);
-    const buttonClicked = () => { toggleDetails(); };
-    const toggleDetails = () => { setShowDetails(!showDetails); };
+    const [isPlaying, setIsPlaying] = useState(false);
 
     const textStyle = showDetails ? { color: '#2EAAAE' } : { color: '#FFA386' };
-    const waveformStyling = showDetails ? { backgroundColor: '#2EAAAE' } : { backgroundColor: '#FFA386' };
     const containerStyle = showDetails ? { backgroundColor: '#E1F3F3', borderColor: '#2EAAAE' } : { backgroundColor: '#FEE7DD', borderColor: '#FFA386' };
+
+    const [detailsText, setDetailsText] = useState("View More Details");
+
+    // Function to toggle details and text
+    const toggleDetails = () => {
+        setShowDetails(!showDetails);
+        setDetailsText(showDetails ? "View More Details" : "Show Less");
+    };
+
+    // Function to handle button click
+    const buttonClicked = () => {
+        toggleDetails();
+    };
 
     async function playSound() {
         try {
+            if (!isPlaying) {
+                console.log('Loading Sound');
+                const wavFileUri = await getWavFileFromStorage(recording.wav_url);
+                console.log('WAV File URI:', wavFileUri); // Log the URI to verify if it's correct
+                const { sound } = await Audio.Sound.createAsync({ uri: wavFileUri });
 
-            console.log('Loading Sound');
-            const wavFileUri = await getWavFileFromStorage(recording.wav_url);
-            console.log('WAV File URI:', wavFileUri); // Log the URI to verify if it's correct
-            const { sound } = await Audio.Sound.createAsync({ uri: wavFileUri });
+                setSound(sound);
+                setIsPlaying(true);
 
-            setSound(sound);
-
-            console.log('Playing Sound');
-            await sound.playAsync();
+                console.log('Playing Sound');
+                await sound.playAsync();
+            } else {
+                setIsPlaying(false);
+                await sound.stopAsync();
+            }
         } catch (error) {
             console.error('Error loading or playing sound:', error);
         }
-    }
-
-    async function getSoundData() {
-        const lines = await getTextFileFromStorage(recording.txt_url)
-        console.log(lines[0])
     }
 
     function convertDateString(date) {
@@ -60,24 +70,6 @@ export default function AudioComp({ recording, idx }) {
         //call firebase sign in function and send username password variable as param
     }
 
-
-    // function resizeAudioData(originalArray) {
-    //     const originalSize = originalArray.length
-    //     // console.log(originalSize)
-    //     const newSize = 35
-    //     const ratio = originalSize / newSize
-    //     const newArray = []
-
-    //     for (let i = 0; i < newSize; i++) {
-    //         const newIndex = Math.floor(i * ratio);
-    //         // console.log(originalArray[newIndex])
-    //         newArray.push(originalArray[newIndex] + 0.02)
-    //         // console.log(i, Math.floor(i*ratio), originalArray[newIndex])
-    //     }
-
-    //     return newArray;
-    // }
-
     useEffect(() => {
         return sound
             ? () => {
@@ -87,69 +79,87 @@ export default function AudioComp({ recording, idx }) {
             : undefined;
     }, [sound]);
 
-    function turnAudioLineIntoPercentForCSS(value) {
-        const percent = (value / heighestAmp) * 100
-        return percent + '%'
-    }
-
-    const openDetails = () => {
-        buttonClicked(); // Toggle details regardless of playing state
-    }
-
+    useEffect(() => {
+        async function loadSoundData() {
+            console.log('loading', recording.text_url)
+            const lines = await getTextFileFromStorage(recording.text_url);
+            setSoundData(lines)
+        }
+        loadSoundData()
+    }, []);
 
     return recording.phrase && (
         <Pressable style={[styles.singleRecording, containerStyle]}>
-            <Pressable style={[styles.button]} onPress={openDetails}>
-                <Text style={[styles.text, textStyle]}>View More Details</Text>
-            </Pressable>
+            <TouchableOpacity onPress={buttonClicked}>
+                <Text style={[styles.text, textStyle]}>{detailsText}</Text>
+            </TouchableOpacity>
             <View style={{ flexDirection: 'row' }}>
-                <Text style={{ fontSize: 80, color: '#FFA386', opacity: 0.6, fontWeight: '500', marginTop: 10, ...textStyle }}>
-                    {idx + 1}
+                <Text style={{ fontSize: 80, lineHeight: 80, marginLeft: 50, color: '#FFA386', opacity: 0.6, fontWeight: '500', marginTop: 10, ...textStyle }}>
+                    {idx < 9 ? `0${idx + 1}` : idx + 1}
                 </Text>
-                <View style={{ justifyContent: 'center', padding: 25 }}>
-                    <Text style={{ color: '#FFA386', fontSize: 30, fontWeight: '700', ...textStyle }}>
+
+                <View style={{ justifyContent: 'center', padding: 25, width: "70%" }}>
+                    <Text style={{ color: '#FFA386', fontSize: 25, fontWeight: '700', ...textStyle }}>
                         {convertDateString(recording.date_recorded).fromNow}
                     </Text>
-                    <Text style={{ color: '#FFA386', fontSize: 15, fontWeight: '700', ...textStyle }}>
+                    <Text style={{ color: '#FFA386', fontSize: 15, fontWeight: '600', ...textStyle }}>
                         {convertDateString(recording.date_recorded).formatted}
-                    </Text>
-                    <Text style={{ color: '#FFA386', fontWeight: '500', maxWidth: 200, ...textStyle }}>
-                        Phrase: "{recording.phrase}"
                     </Text>
                 </View>
             </View>
             {showDetails && (
                 <View>
-                    <View style={styles.waveformContainer}>
+                    {/* <Button title="Print Text" onPress={getSoundData} /> */}
+                    <Text style={{ color: '#FFA386', marginBottom: 10, marginHorizontal: 20, fontWeight: '500', ...textStyle }}>
+                        Phrase: "{recording.phrase}"
+                    </Text>
 
-                        <Button title="Play Sound" onPress={playSound} />
-                        <Button title="Print Text" onPress={getSoundData} />
-                        {/* {normalizedAudio.map(audioLine => (
-                            <View style={{ ...styles.waveformLine, height: turnAudioLineIntoPercentForCSS(audioLine), ...waveformStyling }} />
-                        ))} */}
+                    <View style={{
+                        flexDirection: 'row',
+                        alignItems: 'center'
+                    }}>
+                        <TouchableOpacity onPress={playSound} style={{ padding: 20 }}>
+                            <Image
+                                source={isPlaying ? require('../assets/pause.png') : require('../assets/play.png')}
+                                style={styles.icon}
+                            />
+                        </TouchableOpacity>
 
+                        {soundData && <WaveformComp lines={soundData} showDetails={showDetails} />}
+                        {/* {soundData && <WaveformComp lines={audiodataarray} showDetails={showDetails} />} */}
                     </View>
                 </View>
-            )}
-            {showDetails && (
-                <Pressable style={[styles.button]} onPress={detailsClicked}>
-                    <Text style={[styles.text, textStyle]}>View More Details</Text>
-                </Pressable>
-            )}
-        </Pressable>
+            )
+            }
+            {
+                showDetails && (
+                    <Pressable style={[styles.button]} onPress={detailsClicked}>
+                        <Text style={[styles.text, textStyle]}>View Report</Text>
+                    </Pressable>
+                )
+            }
+        </Pressable >
 
     )
 }
 
 const styles = StyleSheet.create({
     singleRecording: {
-        padding: 30,
+        width: "90%",
+        padding: 20,
         marginTop: 20,
         marginHorizontal: 20,
         backgroundColor: '#FEE7DD',
         borderRadius: 10,
         borderColor: '#F1C4B6',
         borderWidth: 2,
+        justifyContent: 'center',
+        alignItems: 'center',
+
+        shadowColor: 'black',
+        shadowOffset: { width: 0, height: 0.5 },
+        shadowOpacity: 0.05,
+        shadowRadius: 6,
 
     },
     waveformContainer: {
@@ -215,5 +225,22 @@ const styles = StyleSheet.create({
         letterSpacing: 0,
         // wordWrap: 'break-word',
     },
+    button: {
+        backgroundColor: 'white',
+        paddingHorizontal: 15,
+        paddingVertical: 10,
+        borderRadius: 10,
+        justifyContent: 'center',
+        textAlign: 'center',
+        borderColor: '#2EAAAE',
+        borderWidth: 2,
+        margin: 20,
+
+    },
+    icon: {
+        width: 25,
+        height: 25,
+        resizeMode: 'contain',
+    }
 
 })

@@ -22,9 +22,9 @@ export async function pullAllDoctorsData() {
 }
 
 export async function pullAllAppointmentsData() {
-    let doctors = {}
+    let appointments = {}
 
-    doctors = await get(child(dbRef, `appointments/`)).then((snapshot) => {
+    appointments = await get(child(dbRef, `appointments/`)).then((snapshot) => {
         if (snapshot.exists()) {
             return snapshot.val()
         } else {
@@ -35,7 +35,7 @@ export async function pullAllAppointmentsData() {
         return {}
     })
 
-    return doctors
+    return appointments
 }
 
 export async function pullAllPatientsData() {
@@ -51,7 +51,7 @@ export async function pullAllPatientsData() {
         console.error(error);
         return {}
     })
-
+    console.log("hello")
     return patients
 }
 

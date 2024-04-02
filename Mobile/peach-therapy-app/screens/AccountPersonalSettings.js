@@ -1,13 +1,34 @@
 import React, { useState, Component, useEffect } from 'react';
-import { Alert, Button, TouchableHighlight, StyleSheet, Text, View, Image, TextInput, SafeAreaView, AreaChart, Pressable, ScrollView, Switch } from 'react-native';
-import DropdownComponent from './DropdownComponent';
+import { Alert, Button, TouchableHighlight, StyleSheet, Text, View, Image, TextInput, SafeAreaView, AreaChart, Pressable, ScrollView, Switch, RefreshControl } from 'react-native';
+import DropdownComponent from './waste/DropdownComponent';
 import { isUserSignedIn, logout } from '../apis/authenticationAPIs';
 import ProfileHeader from '../components/ProfileHeader';
+//for conditionals
+import PatientNavComp from '../components/PatientNavComp';
+import ClinicianNavComp from '../components/ClinicianNavComp';
+import { getUserDetails } from '../apis/authenticationAPIs'
+import BackButton from '../components/BackButton';
 export default function AccountPersonalSettings({ navigation, props }) {
+  //for condiitonals
+  const [user, setUser] = useState({});
 
   useEffect(() => {
-    if (!isUserSignedIn()) navigation.replace("Login")
-  })
+    if (!isUserSignedIn()) {
+      navigation.replace('Login');
+    } else {
+      loadUserData();
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!isUserSignedIn()) {
+      navigation.replace('Login');
+    }
+  }, [user]); // Add 'user' as a dependency
+
+  const loadUserData = async () => {
+    setUser(await getUserDetails());
+  };
 
   function buttonClicked() {
     navigation.navigate('Account')
@@ -23,7 +44,6 @@ export default function AccountPersonalSettings({ navigation, props }) {
   function goToNotifs() {
     navigation.navigate('Notifications')
   }
-
   function goToCalendar() {
     navigation.navigate('Calendar')
 
@@ -40,40 +60,41 @@ export default function AccountPersonalSettings({ navigation, props }) {
   //const toggleSwitch = () => setIsEnabled(previousState => !previousState);
   //const [isEnabled, setIsEnabled] = useState(false);
   //const toggleSwitch = () => setIsEnabled(previousState => !previousState);
+  const [refreshing, setRefreshing] = useState(false);
+  const handleRefresh = async () => {
+    console.log('Refreshing...');
+    setRefreshing(true);
+    await loadUserData();
+    setRefreshing(false);
+    console.log('Refreshed!');
+  }
+
+  useEffect(() => {
+    return () => {
+      setRefreshing(false); // Reset refreshing state on unmount
+    };
+  }, []);
+
 
   return (//all
-    <ScrollView style={styles.wholePage}>
+    <ScrollView style={styles.wholePage} refreshControl={
+      <RefreshControl
+        refreshing={refreshing}
+        onRefresh={handleRefresh}
+        colors={['#0000ff']}
+      />
+    }
+    >
       <View style={styles.navBar}>
-        <SafeAreaView style={styles.container}>
-          <Pressable>
-            <Image source={require('../assets/Vector-4.png')}
-              style={styles.icon}
-            />
-          </Pressable>
-          <Pressable>
-            <Image source={require('../assets/Vector.png')}
-              style={styles.icon}
-            />
-          </Pressable>
-          <Pressable onPress={() => goToCalendar()}>
-            <Image source={require('../assets/Vector-1.png')}
-              style={styles.icon}
-            />
-          </Pressable>
-          <Pressable onPress={() => goToNotifs()}>
-            <Image source={require('../assets/Vector-2.png')}
-              style={styles.icon}
-            />
-          </Pressable>
 
-          <Pressable style={styles.navSelect} onPress={() => buttonClicked()}>
-            <Image source={require('../assets/Vector-3.png')} style={styles.icon} />
-          </Pressable>
-        </SafeAreaView>
+        {user?.profile?.user_type === 1 && <ClinicianNavComp navigation={navigation} />}
+        {user?.profile?.user_type === 2 && <PatientNavComp navigation={navigation} colorBG={'#24A8AC'} />}
+
+
       </View>
 
-      <ProfileHeader />
-
+      <ProfileHeader colorBG={'#24A8AC'} />
+      <BackButton navigation={navigation} colorBG={'#24A8AC'} ></BackButton>
       <View style={styles.pageContainer}>
         <Pressable style={styles.accentButton} onPress={() => buttonClicked()}>
           <Text style={styles.accentButtonText}>Back to Account</Text>
@@ -222,7 +243,7 @@ const styles = StyleSheet.create({
   navBar: {
     height: 120,
     backgroundColor: '#24A8AC',
-    paddingHorizontal: 15,
+    // // paddingHorizontal: 15,
   },
   icon: {
     width: 25,

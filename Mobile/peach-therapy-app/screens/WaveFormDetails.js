@@ -1,15 +1,29 @@
 import React, { useState, useEffect, Component } from 'react';
 import { Text, TouchableHighlight, SafeAreaView, StyleSheet, Pressable, View, Image, ScrollView } from 'react-native';
-import { audiodataarray } from './audioData';
+import { audiodataarray } from './waste/audioData';
 import { isUserSignedIn } from '../apis/authenticationAPIs';
 
-
+//for condiitonals
+import { getUserDetails } from '../apis/authenticationAPIs'
+import PatientNavComp from '../components/PatientNavComp';
+import ClinicianNavComp from '../components/ClinicianNavComp';
+import BackButton from '../components/BackButton';
 
 export default function WaveFormDetails({ navigation, props }) {
   const [normalizedAudio, setNormalizedAudio] = useState([])
   const [heighestAmp, setHeighestAmp] = useState(0)
   const [playing, setPlaying] = useState(false)
 
+  //for condiitonals
+  const [user, setUser] = useState({});
+  useEffect(() => {
+
+    if (!isUserSignedIn()) navigation.replace("Login");
+    async function loadUserData() {
+      setUser(await getUserDetails())
+    }
+    loadUserData()
+  }, [])
   useEffect(() => {
     if (!isUserSignedIn()) navigation.replace("Login")
   })
@@ -60,39 +74,13 @@ export default function WaveFormDetails({ navigation, props }) {
 
   return (
     <ScrollView>
+      {/* for conditionals */}
+      {user?.profile?.user_type === 1 && <ClinicianNavComp navigation={navigation} colorBG={'#FFA386'} />}
+      {user?.profile?.user_type === 2 && <PatientNavComp navigation={navigation} colorBG={'#FFA386'} />}
+
+      <BackButton navigation={navigation} colorBG={'#FFA386'}></BackButton>
       <SafeAreaView>
-        <SafeAreaView style={{
-          //flex: 1,
-          height: 80,
-          alignItems: 'flex-end',
-          justifyContent: 'space-around',
-          flexDirection: 'row',
-          backgroundColor: '#FFA386',
-        }}>
-          <View style={styles.navSelect}>
-            <Image source={require('../assets/recordselect.png')} style={styles.icon} />
-          </View>
-          <Pressable onPress={() => goToChart()}>
-            <Image source={require('../assets/Vector.png')}
-              style={styles.icon}
-            />
-          </Pressable>
-          <Pressable onPress={() => goToCalendar()}>
-            <Image source={require('../assets/Vector-1.png')}
-              style={styles.icon}
-            />
-          </Pressable>
-          <Pressable onPress={() => goToNotifs()}>
-            <Image source={require('../assets/Vector-2.png')}
-              style={styles.icon}
-            />
-          </Pressable>
-          <Pressable onPress={() => goToSettings()}>
-            <Image source={require('../assets/man.png')}
-              style={styles.icon}
-            />
-          </Pressable>
-        </SafeAreaView>
+
 
         <Pressable style={[styles.singleRecording]} >
           <View style={{ flexDirection: 'row' }}>
@@ -229,7 +217,7 @@ const styles = StyleSheet.create({
   navBar: {
     height: 120,
     backgroundColor: '#FFA386',
-    paddingHorizontal: 15,
+    // paddingHorizontal: 15,
   },
   icon: {
     width: 25,
