@@ -1,0 +1,96 @@
+pyrcc5.exe resource.qrc -o resource_rc.py
+
+pyuic5.exe .\peach_therapy.ui -o .\peach_therapy.py
+
+
+import sys
+from PyQt5.QtWidgets import QMainWindow, QApplication, QPushButton
+from PyQt5.QtGui import QIcon
+from peach_therapy import Ui_MainWindow
+import resource_rc
+
+
+class MainWindow(QMainWindow):
+    def __init__(self):
+        super(MainWindow, self).__init__()
+
+        self.ui = Ui_MainWindow()
+        self.ui.setupUi(self)
+
+        self.ui.stackedWidget.setCurrentIndex(0)
+        self.ui.view_btn.setChecked(True)
+
+        # Set icons for all buttons
+        self.set_button_icons()
+
+        # Connect button signals to functions
+        self.ui.view_btn.clicked.connect(self.view_btn_toggled)
+        self.ui.add_btn.clicked.connect(self.add_btn_toggled)
+        self.ui.apt_btn.clicked.connect(self.apt_btn_toggled)
+        self.ui.settings_btn.clicked.connect(self.settings_btn_toggled)
+
+    def set_button_icons(self):
+        # View Icons
+        self.set_icon(self.ui.view_btn, ":/icons/icons/w_view.png", ":/icons/icons/p_view.png")
+
+        # Add Icon
+        self.set_icon(self.ui.add_btn, ":/icons/icons/w_talk.png", ":/icons/icons/p_talk.png")
+
+        # Apt Icons
+        self.set_icon(self.ui.apt_btn, ":/icons/icons/w_cal.png", ":/icons/icons/p_cal.png")
+
+        # Settings Icon
+        self.set_icon(self.ui.settings_btn, ":/icons/icons/w_gear.png", ":/icons/icons/p_gear.png")
+
+        # Exit Icon
+        self.set_icon(self.ui.exit_btn, ":/icons/icons/w_logout.png", ":/icons/icons/p_logout.png")
+        self.ui.exit_btn.clicked.connect(QApplication.quit)  # Connect clicked signal to quit application
+
+    def set_icon(self, button, normal_icon_path, hover_icon_path):
+        normal_icon = QIcon(normal_icon_path)
+        hover_icon = QIcon(hover_icon_path)
+        button.setIcon(normal_icon)
+        button.clicked.connect(lambda: button.setIcon(hover_icon))  # Connect clicked signal to change icon
+        button.enterEvent = lambda event: button.setIcon(hover_icon)
+        button.leaveEvent = lambda event: button.setIcon(normal_icon)
+
+    # Functions for changing stacked widget index
+    def view_btn_toggled(self):
+        self.ui.stackedWidget.setCurrentIndex(0)
+
+    def add_btn_toggled(self):
+        self.ui.stackedWidget.setCurrentIndex(1)
+
+    def apt_btn_toggled(self):
+        self.ui.stackedWidget.setCurrentIndex(2)
+
+    def settings_btn_toggled(self):
+        self.ui.stackedWidget.setCurrentIndex(3)
+
+
+if __name__ == "__main__":
+    app = QApplication(sys.argv)
+
+    window = MainWindow()
+    window.show()
+
+    sys.exit(app.exec())
+
+
+
+
+QPushButton{
+	color: rgb(255, 255, 255);
+	text-align: left;
+	padding-left: 30px; 
+	border-bottom-right-radius: 10px;
+	border-top-right-radius: 10px;
+	margin-bottom: 10px;
+}
+
+QPushButton:hover {
+	background-color: rgb(255, 255, 255);
+	color: rgb(255, 163, 134);
+	font: 81 17px"Montserrat ExtraBold";
+
+}

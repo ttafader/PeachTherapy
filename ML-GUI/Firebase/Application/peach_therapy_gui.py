@@ -1,13 +1,10 @@
 import sys
 from PyQt5 import QtWidgets, QtCore, QtGui, uic
+import PyQt5.QtWidgets as QtWidgets
 from PyQt5.QtWidgets import QLabel, QDialog, QApplication, QScrollArea, QVBoxLayout, QWidget, QPushButton, QFileDialog, QHBoxLayout
 from PyQt5.QtCore import QUrl, QTimer, QPropertyAnimation, QEasingCurve, Qt
 from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
 from PyQt5.uic import loadUi
-from peach_therapy import Ui_MainWindow
-from audio import AudioWidget
-from progress_graph import ProgressCircle
-from bargraph import BarGraph
 
 import numpy as np
 import speech_recognition as sr
@@ -18,16 +15,26 @@ import pyqtgraph as pg
 from scipy.io import wavfile
 from scipy.io.wavfile import read
 
+# Firebase Imports
 import os, re, subprocess, firebase_admin, datetime, pyrebase
 from firebase_admin import credentials, db, storage
-
 from mycredentials import firebase_init
 from mycredentials import pyrebase_config as config
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = 'firebasecredentials.json'
 
+# Other Python Files
+from peach_therapy import Ui_MainWindow
+from audio import AudioWidget
+from progress_graph import ProgressCircle
+from bargraph import BarGraph
+from boundariesplot import DecisionBoundaryPlot
+
 # cd C:\Users\tajmi\OneDrive\Documents\PeachTherapy\ML-GUI\Firebase\Application
 # pyuic5.exe .\peach_therapy.ui -o .\peach_therapy.py
+# pyuic5.exe .\peach_therapy.ui -o .\peach_therapy.py
 # pyrcc5.exe .\resource.qrc -o .\resource_rc.py
+
+# pip install urllib3==1.26.15 requests-toolbelt==0.10.1
 
 # Initialize Firebase Admin SDK
 cred = credentials.Certificate('firebasecredentials.json')
@@ -47,6 +54,7 @@ class Login(QDialog):
         self.password.setEchoMode(QtWidgets.QLineEdit.Password)
         self.createaccbutton.clicked.connect(self.gotocreate)
         self.invalid.setVisible(False)
+        self.setWindowTitle("Peach Therapy")
 
     def loginfunction(self):
         email = self.email.text()
@@ -78,6 +86,7 @@ class CreateAcc(QDialog):
         self.confirmpass.setEchoMode(QtWidgets.QLineEdit.Password)
         self.emailinvalid.setVisible(False)
         self.failed.setVisible(False)
+        self.setWindowTitle("Peach Therapy")
 
     def createaccfunction(self):
         email = self.email.text()
@@ -90,6 +99,7 @@ class CreateAcc(QDialog):
             try:
                 auth_data = auth.create_user_with_email_and_password(email, password)
                 user_id = auth_data['localId']  # Extract the user ID from the authentication data
+                img_path = "https://t3.ftcdn.net/jpg/05/16/27/58/360_F_516275801_f3Fsp17x6HQK0xQgDQEELoTuERO4SsWV.jpg"
 
                 # Write user info to the 'doctors -> profile' node in Firebase
                 doctor_ref = db.reference('doctors').child(user_id).child('profile')
@@ -98,7 +108,8 @@ class CreateAcc(QDialog):
                     "last_name": last_name,
                     "clinic": clinic,
                     "email": email,
-                    "user_type" : 1
+                    "user_type" : 1,
+                    "img_url": img_path
                 })
 
                 self.accept()  # Close the dialog if account creation successful
@@ -112,6 +123,7 @@ class MainWindow(QtWidgets.QMainWindow):
         super(MainWindow, self).__init__()
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
+        self.setWindowTitle("Peach Therapy")
 
         self.ui.view_btn.clicked.connect(self.view_btn_toggled)
         self.ui.add_btn.clicked.connect(self.add_btn_toggled)
@@ -419,6 +431,7 @@ class MainWindow(QtWidgets.QMainWindow):
     
 #----------------------PATIENT OVERVIEW------------------------#
     def patient_overview(self, patient_id):
+        self.ui.norec.setVisible(False)
         self.ui.viewWidget.setCurrentIndex(1)  # Move to the second page of viewwidget
         print("Current Index of viewWidget:", self.ui.viewWidget.currentIndex())
         print(patient_id)
@@ -449,6 +462,7 @@ class MainWindow(QtWidgets.QMainWindow):
         recordings = records_ref.get()
         confidence_values = []  # Initialize an empty list to store confidence values
         dates_label_values = []
+        feature_data_list = []
 
         # Check if recordings node exists and contains subnodes
         if recordings:
@@ -457,13 +471,20 @@ class MainWindow(QtWidgets.QMainWindow):
             for recording_key, recording_data in recordings.items():
                 confidence_str = recording_data.get("confidence")
                 dates = recording_data.get("date_recorded")
+                feature_data = recording_data.get("features")
 
                 if confidence_str and dates is not None:  # Check if confidence value exists
                     confidence = 100 - float(confidence_str)
                     confidence_values.append(confidence)  # Append confidence value to the list
                     dates_label_values.append(dates)
 
-        print (confidence_values, dates_label_values)
+                    if feature_data is not None:
+                         feature_data_list.append(list(feature_data.values()))  # Append only the values of feature data to the list
+
+        else: 
+            confidence_values = [1]
+            dates_label_values = "None"
+
         # PROGRESS GRAPH
         recent_values = confidence_values[-3:]
         average_confidence = sum(recent_values) / len(recent_values)
@@ -486,7 +507,7 @@ class MainWindow(QtWidgets.QMainWindow):
         progress_gph_layout_widget.addWidget(progress_graph)
 
         #BAR Graph
-         # Create a ProgressCircle instance with the updated confidence values
+        # Create a ProgressCircle instance with the updated confidence values
         bar_graph = BarGraph(dates_label_values, confidence_values)
         
         # Assuming progress_gph() returns a layout widget where you want to add the ProgressCircle
@@ -502,6 +523,23 @@ class MainWindow(QtWidgets.QMainWindow):
         # Adding the ProgressCircle widget to the layout
         bar_gph_layout_widget.addWidget(bar_graph)
 
+        #BOUNDARY GRAPH
+        # Create a ProgressCircle instance with the updated confidence values
+        boundary_graph = DecisionBoundaryPlot(feature_data_list)
+        
+        # Assuming progress_gph() returns a layout widget where you want to add the ProgressCircle
+        bdy_gph_layout_widget = self.ui.boundary_gph
+        
+        # Clear the layout of any existing widgets
+        while bdy_gph_layout_widget.count():
+            item = bdy_gph_layout_widget.takeAt(0)
+            widget = item.widget()
+            if widget is not None:
+                widget.deleteLater()
+        
+        # Adding the ProgressCircle widget to the layout
+        bdy_gph_layout_widget.addWidget(boundary_graph)
+
         
 #---------------------------RECORD HISTORY----------------------#
     def record_history(self, patient_id):
@@ -513,10 +551,14 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.rec_title.setText(f"{first_name}'s Recording History")
         self.ui.viewWidget.setCurrentIndex(2)  # Move to the third page of viewwidget
         self.ui.backtoprof_btn_2.clicked.connect(self.view_btn_toggled)
-        self.populate_recordings(patient_id)  # Populate patient profiles
-        print("Current Index of viewWidget:", self.ui.viewWidget.currentIndex())
+        # Start populating recordings in the background
+        QTimer.singleShot(0, lambda: self.populate_recordings(patient_id))
+        self.ui.loadingrec.setVisible(True)
+        #self.populate_recordings(patient_id)  # Populate patient profiles
 
     def populate_recordings(self, patient_id):
+        self.ui.loadingrec.setVisible(True)
+        self.ui.norec.setVisible(False)
         # Retrieve patient data from Firebase
         user = auth.current_user
         if user:
@@ -571,7 +613,7 @@ class MainWindow(QtWidgets.QMainWindow):
             else:
                 print("No recordings found for the user.")
                 self.ui.norec.setVisible(True)
-
+            self.ui.loadingrec.setVisible(False)
             # Set vertical scrollbar policy
             rec_page_layout_widget.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
             # Set stylesheet for the vertical scrollbar
@@ -651,7 +693,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.rec_patient.setText(name)
         self.ui.rec_date.setText(current_date)
 
-        self.ui.viewrec_btn.clicked.connect(lambda: self.record_history(patient_id))
+        self.ui.viewrec_btn_2.clicked.connect(lambda: self.record_history(patient_id))
         self.ui.startrec_btn.clicked.connect(self.start_recording)
         self.ui.stoprec_btn.clicked.connect(self.stop_recording)
         self.ui.playback_btn.clicked.connect(self.playback_recording)
@@ -660,7 +702,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def analyze_save_recording(self, patient_id):
         phrase = self.ui.recphrase.text()
-        notes = self.ui.recnotes.text()
+        notes = self.ui.recnotes.toPlainText()
         self.ui.loading.setVisible(True)
         recording_file, _ = QFileDialog.getOpenFileName(self, "Select Recording File", "", "Audio Files (*.wav *.mp3 *.ogg)")
         if recording_file:

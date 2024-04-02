@@ -74,11 +74,11 @@ def extract_voice_features(audio_file):
     else:
         mfcc_mean = mfcc_var = 0
 
-    features = {'pitch_period': pitch_period, 
-                'formant1': formant1, 
+    features = {'formant1': formant1, 
                 'formant2': formant2,
                 'mfcc_mean': mfcc_mean,
-                'mfcc_var': mfcc_var}
+                'mfcc_var': mfcc_var,
+                'pitch_period': pitch_period}
     # Return the extracted features as a dictionary
     return features
 
@@ -148,20 +148,22 @@ support_vectors = X_train_scaled[model.support_]
 # Calculate mean support vector for each feature
 mean_support_vector = np.mean(support_vectors, axis=0)
 
+import numpy as np
+import matplotlib.pyplot as plt
 from mlxtend.plotting import plot_decision_regions
 
-def plot_decision_boundaries(X, y, model, scaler, feature_names, ax):
+def plot_decision_boundaries(X, y, feature_names, ax):
     # PCA for visualization (reduce to 2 dimensions)
     pca = PCA(n_components=2)
     X_pca = pca.fit_transform(X)
 
     # Create a new SVM model for visualization
-    model_for_plot = SVC(kernel='linear', probability=True)
+    model_for_plot = model #SVC(kernel='linear', probability=True)
     model_for_plot.fit(X_pca, y)
 
     # Plot decision boundaries
-    plot_decision_regions(X_pca, y, clf=model_for_plot, scatter_kwargs={'edgecolor': 'k', 'c': y, 'cmap': plt.cm.coolwarm},
-                          contourf_kwargs={'levels': [0], 'alpha': 0.8}, ax=ax)
+    plot_decision_regions(X_pca, y, clf=model_for_plot, legend=0, ax=ax, colors = '#78D6D9,#FFA386',
+                           contourf_kwargs={'levels': [0], 'alpha': 0.8})
     
     ax.set_xlabel(feature_names[0])
     ax.set_ylabel(feature_names[1])
@@ -169,7 +171,7 @@ def plot_decision_boundaries(X, y, model, scaler, feature_names, ax):
     return ax
 
 # Define 'features' at a higher scope
-features = ['pitch_period', 'formant1', 'formant2', 'mfcc_mean', 'mfcc_var']
+features = ['formant1', 'formant2', 'mfcc_mean', 'mfcc_var', 'pitch_period']
 
 # Pairwise combinations of features
 feature_combinations = list(combinations(features, 2))
@@ -180,7 +182,7 @@ axs = axs.flatten()
 
 for i, (feature1, feature2) in enumerate(feature_combinations):
     indices = [features.index(feature1), features.index(feature2)]
-    scatter = plot_decision_boundaries(X_train_scaled[:, indices], y_train, model, scaler, [feature1, feature2], axs[i])
+    scatter = plot_decision_boundaries(X_train_scaled[:, indices], y_train, [feature1, feature2], axs[i])
 
 fig.suptitle('Decision Boundaries for SVM Model', y=1.02)
 plt.tight_layout()
@@ -197,7 +199,9 @@ plt.tight_layout()
 plt.show()
 
 # Save the model and scaler
-joblib.dump(model, 'model_svm_fitted_70_30.pkl')
-joblib.dump(scaler, 'scaler_70_30.pkl')
+joblib.dump(model, 'model_for_plotting.pkl')
+joblib.dump(scaler, 'scaler_for_plotting.pkl')
+np.save('X_train_scaled.npy', X_train_scaled)
+np.save('y_train.npy', y_train)
 
 print("Model trained and saved successfully.")
