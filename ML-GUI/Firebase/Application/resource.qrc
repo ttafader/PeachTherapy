@@ -1,5 +1,9 @@
 <RCC>
   <qresource prefix="icons">
+    <file>icons/b_playback.png</file>
+    <file>icons/upload2_pink.png</file>
+    <file>icons/call_pink.png</file>
+    <file>icons/upload_pink.png</file>
     <file>icons/pause_brown.png</file>
     <file>icons/play_pink.png</file>
     <file>icons/p_playback.png</file>

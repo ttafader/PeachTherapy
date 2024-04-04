@@ -10,6 +10,8 @@ import numpy as np
 import speech_recognition as sr
 import io
 import json
+import pygame
+import matplotlib.pyplot as plt
 
 import pyqtgraph as pg
 from scipy.io import wavfile
@@ -45,6 +47,8 @@ firebase_admin.initialize_app(cred, firebase_init)
 # Initialize Pyrebase
 firebase = pyrebase.initialize_app(config)
 auth = firebase.auth()
+
+recording_file = ""
 
 class Login(QDialog):
     def __init__(self):
@@ -109,7 +113,8 @@ class CreateAcc(QDialog):
                     "clinic": clinic,
                     "email": email,
                     "user_type" : 1,
-                    "img_url": img_path
+                    "img_url": img_path,
+                    "doctor_id": user_id
                 })
 
                 self.accept()  # Close the dialog if account creation successful
@@ -139,9 +144,15 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.nopatients.setVisible(False)
         self.ui.failed_patient.setVisible(False)
         self.ui.loading.setVisible(False)
+        self.ui.not_connected.setVisible(False)
         self.ui.savesuccess.setVisible(False)
         self.ui.savefail.setVisible(False)
+        self.ui.not_connected.setVisible(False)
+        self.ui.recording_stopped.setVisible(False)
+        self.ui.recording_in_progress.setVisible(False)
         self.ui.norec.setVisible(False)
+        self.ui.no_recording.setVisible(False)
+        self.ui.upload_success.setVisible(False)
 
         self.profilecard_template = self.ui.profilecard  # Get the profilecard widget as template
 
@@ -174,7 +185,7 @@ class MainWindow(QtWidgets.QMainWindow):
             return f"{first_name} {last_name}"
         else:
             return "Unknown"  # Return a default value if patient data is not found
-            
+                   
     def convert_wav_to_text(self, wav_file):
             # Read audio file
             sample_rate, sample = read(wav_file)
@@ -218,6 +229,9 @@ class MainWindow(QtWidgets.QMainWindow):
         txt_url=f"gs://{bucket.name}/{textblob.name}"
 
         return wav_url, txt_url
+    
+    def hide_message(self, message_widget):
+        message_widget.setVisible(False)
         
 #--------------------------VIEW PATIENTS--------------------------#
     def view_btn_toggled(self):
@@ -694,118 +708,174 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.rec_date.setText(current_date)
 
         self.ui.viewrec_btn_2.clicked.connect(lambda: self.record_history(patient_id))
+
         self.ui.startrec_btn.clicked.connect(self.start_recording)
         self.ui.stoprec_btn.clicked.connect(self.stop_recording)
         self.ui.playback_btn.clicked.connect(self.playback_recording)
-        self.ui.redo_btn.clicked.connect(self.redo_recording)
-        self.ui.save_btn.clicked.connect(lambda: self.analyze_save_recording(patient_id))  # Assuming patient_id is available
+        self.ui.call_btn.clicked.connect(self.callin_recording)
+        self.ui.upload_btn.clicked.connect(self.upload_method_recording)
+        self.ui.save_btn.clicked.connect(lambda: self.save_recording(patient_id))  # Assuming patient_id is available
 
-    def analyze_save_recording(self, patient_id):
-        phrase = self.ui.recphrase.text()
-        notes = self.ui.recnotes.toPlainText()
-        self.ui.loading.setVisible(True)
+    def start_recording(self):
+        self.ui.recording_in_progress.setVisible(True)
+        global recording_file
+        recording_file = "start_recording.wav" 
+        # Call serial_uart.py to start the recording process
+        process = subprocess.Popen(['python', 'serial_uart.py'])
+        process.wait()  # Wait for the process to finish
+
+        # Log the return code for debugging
+        print("Subprocess return code:", process.returncode)
+        
+        # Check the return code of the process
+        if process.returncode == 0:
+            print("DSP not connected")
+            self.ui.recording_in_progress.setVisible(False)
+            self.ui.not_connected.setVisible(True)
+            QTimer.singleShot(3000, lambda: self.hide_message(self.ui.not_connected))
+            self.ui.loading.setVisible(False)
+
+    def stop_recording(self):
+        self.ui.loading.setVisible(False)
+        self.ui.recording_in_progress.setVisible(False)
+        self.ui.recording_stopped.setVisible(True)
+        QTimer.singleShot(2000, lambda: self.hide_message(self.ui.recording_stopped))
+        # End the running of serial_uart.py
+        # subprocess.run(['pkill', '-f', 'serial_uart.py'])
+        global recording_file
+        recording_file = "stop_recording.wav"
+        return recording_file
+
+    def playback_recording(self):
+        # Add playback recording logic here
+        global recording_file
+        pygame.mixer.init()
+        pygame.mixer.music.load("dsp_recording.wav")
+        pygame.mixer.music.play()
+        recording_file = "dsp_recording.wav"
+        pass
+
+    def callin_recording(self):
+        # Add call in recording logic here
+        global recording_file
+        recording_file = "callin_recording.wav"
+        return recording_file
+
+    def upload_method_recording(self):
+        # Add call in recording logic here
+        global recording_file
         recording_file, _ = QFileDialog.getOpenFileName(self, "Select Recording File", "", "Audio Files (*.wav *.mp3 *.ogg)")
         if recording_file:
             print("Selected file:", recording_file)
-            print("Received patient_id:", patient_id)  # Print the patient_id received
-            
-            # Get current date
-            current_date = QtCore.QDate.currentDate().toString(QtCore.Qt.ISODate)
-            current_datetime = QtCore.QDateTime.currentDateTime()
-            formatted_datetime = current_datetime.toString("yyyyMMddTHHmmss")
+            # Check if recording_file is not empty
+            if recording_file.strip():
+                self.ui.upload_success.setVisible(True)
+                QTimer.singleShot(3000, lambda: self.hide_message(self.ui.upload_success))
+            else:
+                print("No recording data")
+                self.ui.no_recording.setVisible(True)
+                QTimer.singleShot(3000, lambda: self.hide_message(self.ui.no_recording))
+        else:
+            print("No user is currently logged in.")
+        return recording_file
 
-            # Generate a unique key for the recording under 'patients -> patient_id -> recordings -> current_date'
-            recordings_ref = db.reference('patients').child(patient_id).child('recordings').child(formatted_datetime)
-            text_data = self.convert_wav_to_text(recording_file)
 
-            # Run diagnosis script
-            try:
-                # Call the subprocess to get diagnosis result and features
-                result = subprocess.run(['python', 'ku_test.py', recording_file], capture_output=True, text=True)
+    def save_recording(self, patient_id):
+        global recording_file
+        # Check if recording_file is empty
+        if not recording_file:
+            print("No recording data")
+            self.ui.no_recording.setVisible(True)
+            QTimer.singleShot(3000, lambda: self.hide_message(self.ui.no_recording))
 
-                # Check if the subprocess returned a non-zero exit status
-                if result.returncode != 0:
-                    print("Error running diagnosis script:", result.stderr)
-                    # Handle the error as needed
-                else:
-                    # Parse the subprocess output as JSON to extract diagnosis result (prediction probability) and features
-                    output_data = json.loads(result.stdout.strip())
+            return
 
-                    # Extract diagnosis result (prediction probability) and features
-                    diagnosis_result = output_data['prediction_probability']
-                    features = output_data['features']
+        print(recording_file)
+        phrase = self.ui.recphrase.text()
+        notes = self.ui.recnotes.toPlainText()
+        self.ui.loading.setVisible(True)
+        
+        print("Received patient_id:", patient_id)  # Print the patient_id received
+        
+        # Get current date
+        current_date = QtCore.QDate.currentDate().toString(QtCore.Qt.ISODate)
+        current_datetime = QtCore.QDateTime.currentDateTime()
+        formatted_datetime = current_datetime.toString("yyyyMMddTHHmmss")
 
-                    # Print diagnosis result and features
-                    print("Diagnosis Probability:", diagnosis_result)
-                    print("Features:", features)
-                #result = subprocess.run(['python', 'ku_test.py', recording_file], capture_output=True, text=True, check=True)
+        # Generate a unique key for the recording under 'patients -> patient_id -> recordings -> current_date'
+        recordings_ref = db.reference('patients').child(patient_id).child('recordings').child(formatted_datetime)
+        text_data = self.convert_wav_to_text(recording_file)
+
+        # Run diagnosis script
+        try:
+            # Call the subprocess to get diagnosis result and features
+            result = subprocess.run(['python', 'ku_test.py', recording_file], capture_output=True, text=True)
+
+            # Check if the subprocess returned a non-zero exit status
+            if result.returncode != 0:
+                print("Error running diagnosis script:", result.stderr)
+                # Handle the error as needed
+            else:
                 # Parse the subprocess output as JSON to extract diagnosis result (prediction probability) and features
                 output_data = json.loads(result.stdout.strip())
 
                 # Extract diagnosis result (prediction probability) and features
                 diagnosis_result = output_data['prediction_probability']
                 features = output_data['features']
-                print("Diagnosis completed successfully:", diagnosis_result,"%")
 
-                wav_url, txt_url = self.upload_recording(
-                    filename=formatted_datetime, 
-                    patient_id=patient_id, 
-                    file_url=recording_file, 
-                    text_data=text_data
-                )
-        
-                # Store the recording URL under the unique key
-                recordings_ref.set({
-                    "confidence": diagnosis_result,
-                    "date_recorded" : formatted_datetime,
-                    "date_label": current_date,
-                    "phrase": phrase,
-                    "doctor_note": notes,
-                    "wav_url": wav_url,
-                    "text_url" : txt_url,
-                    "features" : features
-                })
+                # Print diagnosis result and features
+                print("Diagnosis Probability:", diagnosis_result)
+                print("Features:", features)
+            #result = subprocess.run(['python', 'ku_test.py', recording_file], capture_output=True, text=True, check=True)
+            # Parse the subprocess output as JSON to extract diagnosis result (prediction probability) and features
+            output_data = json.loads(result.stdout.strip())
 
-                self.ui.savesuccess.setVisible(True)
-                self.clear_record_fields()
-                # Schedule hiding of the success message after 5 seconds
-                QTimer.singleShot(5000, self.hide_save_message)
+            # Extract diagnosis result (prediction probability) and features
+            diagnosis_result = output_data['prediction_probability']
+            features = output_data['features']
+            print("Diagnosis completed successfully:", diagnosis_result,"%")
 
-            except subprocess.CalledProcessError as e:
-                print("Error running diagnosis script:", e)
-                diagnosis_result = -99
-            except Exception as e2: 
-                print("Recording not saved", e2)
-                self.ui.savefail.setVisible(True)
-            finally:
-            # Hide loading indicator after execution
-                self.ui.loading.setVisible(False)
-                
-        else:
-            print("No user is currently logged in.")
-            pass
+            wav_url, txt_url = self.upload_recording(
+                filename=formatted_datetime, 
+                patient_id=patient_id, 
+                file_url=recording_file, 
+                text_data=text_data
+            )
+    
+            # Store the recording URL under the unique key
+            recordings_ref.set({
+                "confidence": diagnosis_result,
+                "date_recorded" : formatted_datetime,
+                "date_label": current_date,
+                "phrase": phrase,
+                "doctor_note": notes,
+                "wav_url": wav_url,
+                "text_url" : txt_url,
+                "features" : features
+            })
+
+            self.ui.savesuccess.setVisible(True)
+            self.clear_record_fields()
+            # Schedule hiding of the success message after 5 seconds
+            QTimer.singleShot(3000, lambda: self.hide_message(self.ui.savesuccess))
+            recording_file = ""
+
+        except subprocess.CalledProcessError as e:
+            print("Error running diagnosis script:", e)
+            diagnosis_result = -99
+        except Exception as e2: 
+            print("Recording not saved", e2)
+            self.ui.savefail.setVisible(True)
+        finally:
+        # Hide loading indicator after execution
+            self.ui.loading.setVisible(False)
+            
+        pass
 
     def clear_record_fields(self):
         self.ui.recphrase.clear()
         self.ui.recnotes.clear()
-    
-    def hide_save_message(self):
-        self.ui.savesuccess.setVisible(False)
 
-    def start_recording(self):
-        pass
-
-    def stop_recording(self):
-        # Add stop recording logic here
-        pass
-
-    def playback_recording(self):
-        # Add playback recording logic here
-        pass
-
-    def redo_recording(self):
-        # Add redo recording logic here
-        pass
 
 #--------------------------ADD PATIENTS--------------------------#
     def add_btn_toggled(self):
@@ -872,7 +942,7 @@ class MainWindow(QtWidgets.QMainWindow):
             # Clear inputted data from the text boxes
             self.clear_input_fields()
             # Schedule hiding of the success message after 3 seconds
-            QTimer.singleShot(3000, self.hide_success_message)
+            QTimer.singleShot(3000, lambda: self.hide_message(self.ui.profilesuccess))
         else:
             print("No user is currently logged in.")
 
@@ -883,11 +953,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.lastname_patient.clear()
         self.ui.patientdropdown.setCurrentIndex(0)  # Assuming index 0 is the default option
         self.ui.birthday.setDate(QtCore.QDate(2000, 1, 1))
-
-    def hide_success_message(self):
-        self.ui.profilesuccess.setVisible(False)
-
-
         
 #--------------------------APPOINTMENTS--------------------------#
     def apt_btn_toggled(self):
@@ -1037,24 +1102,19 @@ class MainWindow(QtWidgets.QMainWindow):
             self.ui.aptnote.clear()
 
             # Schedule re-enabling of the "Book Now" button after 5 seconds
-            QTimer.singleShot(5000, self.enable_booknow_button)
+            QTimer.singleShot(3000, self.enable_booknow_button)
 
             # Schedule hiding of the success message after 3 seconds
-            QTimer.singleShot(3000, self.hide_success_message_apt)
+            QTimer.singleShot(3000, lambda: self.hide_message(self.ui.aptsuccess))
         else:
             self.ui.selpatienterror.setVisible(True)  # Show error message for not selecting a patient
             self.ui.booknow_btn.setEnabled(True)
-            QTimer.singleShot(3000, self.hide_select_message_apt)
+            QTimer.singleShot(3000, lambda: self.hide_message(self.ui.selpatienterror))
 
     def enable_booknow_button(self):
         # Re-enable the "Book Now" button
         self.ui.booknow_btn.setEnabled(True)
 
-    def hide_success_message_apt(self):
-        self.ui.aptsuccess.setVisible(False)
-
-    def hide_select_message_apt(self):
-        self.ui.selpatienterror.setVisible(False)  # Hide error message after a delay
         
 
 
