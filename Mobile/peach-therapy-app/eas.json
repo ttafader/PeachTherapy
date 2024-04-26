@@ -6,13 +6,11 @@
             "channel": "development"
         },
         "production": {
-            "releaseChannel": "production-v1",
+            "channel": "production-v1",
             "distribution": "store"
         }
     },
     "submit": {
-        "production": {
-            
-        }
+        "production": {}
     }
 }

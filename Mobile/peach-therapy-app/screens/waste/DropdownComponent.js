@@ -86,6 +86,7 @@ const styles = StyleSheet.create({
     zIndex: 999,
     paddingHorizontal: 8,
     color: '#24A8AC',
+    //fontFamily: "Montserrat",
     fontSize: 14,
   },
   placeholderStyle: {

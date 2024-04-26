@@ -146,6 +146,7 @@ const styles = StyleSheet.create({
   profileSubheading: {
     color: 'white',
     //fontFamily: '',
+    //fontFamily: "Montserrat",
     fontSize: 14,
     //fontStyle: normal,
     fontWeight: '300',
@@ -186,7 +187,7 @@ const styles = StyleSheet.create({
   },
   profileDescription: {
     color: 'white',
-    //font-family: Montserrat,
+
     fontSize: 18,
     //fontStyle: normal,
     fontWeight: '700',
@@ -226,6 +227,7 @@ const styles = StyleSheet.create({
   text: {
     // Login
     color: '#24A8AC',
+    //fontFamily: "Montserrat",
     fontSize: 14,
     fontWeight: '500',
     lineHeight: 24,

@@ -39,6 +39,7 @@ export default function ProfileComp({ navigation, patient_id }) {
             obj.profile.last_name &&
             obj.profile.img_url) {
             setPatientName(obj.profile.first_name + " " + obj.profile.last_name)
+
             setImageDisplay(obj.profile.img_url)
             setBirthdate(obj.profile.birthday)
         }
@@ -56,11 +57,11 @@ export default function ProfileComp({ navigation, patient_id }) {
                         {birthDate}
                     </Text>
                 </View>
-            </View>
+            </View >
             <Pressable style={[styles.button]} onPress={viewProfileClicked}>
                 <Text style={[styles.text]}>View Profile</Text>
             </Pressable>
-        </Pressable>
+        </Pressable >
     )
 }
 
@@ -132,7 +133,7 @@ const styles = StyleSheet.create({
 
     profileDescription: {
         color: 'black',
-        //font-family: Montserrat,
+
         fontSize: 18,
         //fontStyle: normal,
         fontWeight: '700',
@@ -142,6 +143,7 @@ const styles = StyleSheet.create({
     profileSubheading: {
         color: 'black',
         //fontFamily: '',
+        //fontFamily: "Montserrat",
         fontSize: 14,
         //fontStyle: normal,
         fontWeight: '300',

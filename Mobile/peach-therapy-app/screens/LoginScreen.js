@@ -216,6 +216,7 @@ const styles = StyleSheet.create({
 
   forgotPassword: {
     color: '#FFA386',
+    //fontFamily: "Montserrat",
     fontSize: 14,
     fontWeight: '700',
     textDecorationLine: 'underline',

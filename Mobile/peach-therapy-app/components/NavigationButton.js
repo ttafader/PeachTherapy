@@ -11,6 +11,6 @@ export default function NavButton({ navigation, pageName, destination }) {
                 onPress={() => navigation.navigate(destination)}>
                 <Text style={{ fontWeight: "600" }}>{pageName}</Text>
             </TouchableOpacity>
-        </View>
+        </View >
     )
 }

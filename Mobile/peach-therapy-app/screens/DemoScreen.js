@@ -70,7 +70,7 @@ export default function DemoScreen({ navigation }) {
                 {/* Display user type */}
                 <View style={{ alignItems: 'center', marginVertical: 20 }}>
                     <Text style={{ fontWeight: 'bold' }}>CURRENT USER TYPE</Text>
-                    <Text style={{ fontSize: 24 }}>
+                    < Text style={{ fontSize: 24 }}>
                         {user?.profile?.user_type === 1 ? 'Doctor' : user?.profile?.user_type === 2 ? 'Patient' : 'N/A'}
                     </Text>
                 </View>

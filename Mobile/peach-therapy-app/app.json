@@ -2,7 +2,7 @@
   "expo": {
     "name": "peach-therapy-app",
     "slug": "peach-therapy-app",
-    "version": "1.0.1",
+    "version": "1.1.1",
     "orientation": "portrait",
     "icon": "./assets/peeach-06.png",
     "userInterfaceStyle": "light",
@@ -21,7 +21,7 @@
     },
     "android": {
       "package": "com.nazurazu.peachtherapyapp",
-      "versionCode": 5,
+      "versionCode": 6,
       "adaptiveIcon": {
         "foregroundImage": "./assets/peeach-08-min.png",
         "backgroundColor": "#FFF6F3"

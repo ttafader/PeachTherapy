@@ -135,9 +135,9 @@ export default function WaveFormDetails({ navigation, props }) {
               {'\n'}Target Sounds: The patient demonstrated minimal difficulty with this word. The target sounds, in this case, would be the sounds in "turkey" that the patient produced correctly. The speech pathologist may use these sounds as a baseline for therapy.</Text>
           </Pressable>
 
-        </Pressable>
-      </SafeAreaView>
-    </ScrollView>
+        </Pressable >
+      </SafeAreaView >
+    </ScrollView >
   );
 }
 
@@ -276,6 +276,7 @@ const styles = StyleSheet.create({
   profileSubheading: {
     color: 'white',
     //fontFamily: '',
+    //fontFamily: "Montserrat",
     fontSize: 14,
     //fontStyle: normal,
     fontWeight: '300',

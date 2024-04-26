@@ -119,6 +119,7 @@ const styles = StyleSheet.create({
   },
   text: {
     color: '#24A8AC',
+    //fontFamily: "Montserrat",
     fontSize: 14,
     fontWeight: '500',
     lineHeight: 24,

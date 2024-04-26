@@ -105,8 +105,8 @@ export default function AudioComp({ navigation, recording, idx }) {
                     <Text style={{ color: '#FFA386', fontSize: 15, fontWeight: '600', ...textStyle }}>
                         {convertDateString(recording.date_recorded).formatted}
                     </Text>
-                </View>
-            </View>
+                </View >
+            </View >
             {showDetails && (
                 <View>
                     {/* <Button title="Print Text" onPress={getSoundData} /> */}
@@ -131,7 +131,7 @@ export default function AudioComp({ navigation, recording, idx }) {
                         {soundData && <WaveformComp lines={soundData} showDetails={showDetails} />}
                         {/* {soundData && <WaveformComp lines={audiodataarray} showDetails={showDetails} />} */}
                     </View>
-                </View>
+                </View >
             )
             }
             {
@@ -148,6 +148,7 @@ export default function AudioComp({ navigation, recording, idx }) {
 
 const styles = StyleSheet.create({
     singleRecording: {
+
         width: "90%",
         padding: 30,
         marginTop: 20,
@@ -167,6 +168,7 @@ const styles = StyleSheet.create({
     },
     waveformContainer: {
 
+
         marginLeft: 1,
         //width: "100%",
         height: 100,
@@ -177,6 +179,7 @@ const styles = StyleSheet.create({
 
     },
     waveformLine: {
+
         borderRadius: 9999,
         //marginRight: '1%',
         width: '2%',
@@ -184,6 +187,7 @@ const styles = StyleSheet.create({
     },
 
     text: {
+
         color: '#2EAAAE',
         fontWeight: '700',
 
@@ -191,6 +195,7 @@ const styles = StyleSheet.create({
 
     accountInfo: {
         //flex: 1,
+
         flexDirection: 'row',
         marginTop: 5,
         padding: 10,
@@ -199,19 +204,22 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     accountInfoContainer: {
+
         margin: 10,
 
     },
     profilePic: {
         width: 60,
         height: 60,
+
         borderRadius: 50,
         borderWidth: 2,
         borderColor: 'white',
     },
     profileDescription: {
         color: 'black',
-        //font-family: Montserrat,
+
+
         fontSize: 18,
         //fontStyle: normal,
         fontWeight: '700',
@@ -221,6 +229,8 @@ const styles = StyleSheet.create({
     profileSubheading: {
         color: 'black',
         //fontFamily: '',
+
+        //fontFamily: "Montserrat",
         fontSize: 14,
         //fontStyle: normal,
         fontWeight: '300',
@@ -231,6 +241,7 @@ const styles = StyleSheet.create({
     button: {
         backgroundColor: 'white',
         paddingHorizontal: 15,
+
         paddingVertical: 10,
         borderRadius: 10,
         justifyContent: 'center',
@@ -242,6 +253,7 @@ const styles = StyleSheet.create({
     },
     icon: {
         width: 25,
+
         height: 25,
         resizeMode: 'contain',
     }

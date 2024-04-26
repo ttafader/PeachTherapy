@@ -231,7 +231,10 @@ export default function Chart({ navigation, route }) {
                     )}
                     <Text style={{ top: '20%', left: '20%', textAlign: 'center', width: '60%', ...styles.bigPercent, color: '#DB7B5B' }}>
                         {Math.floor(averageComplementConfidence())}%
-                        <Text style={{ fontSize: 14, color: '#F08E6F', textAlign: 'center' }}>
+                        <Text style={{
+                            //fontFamily: "Montserrat",
+                            fontSize: 14, color: '#F08E6F', textAlign: 'center'
+                        }}>
                             {'\n'}{getStatusLabel(averageComplementConfidence())}{'\n'}This graph shows your overall most current score.
                         </Text>
                     </Text>
@@ -248,14 +251,18 @@ export default function Chart({ navigation, route }) {
                     Here is your Progress Report
                 </Text>
                 <View style={{ backgroundColor: '#FFA386', padding: 10, marginTop: 30, marginHorizontal: 30, borderTopLeftRadius: 10, borderTopRightRadius: 10 }}>
-                    <Text style={{ color: 'white', fontWeight: '500', paddingHorizontal: 10, paddingTop: 10 }}>
-                        Here is a cumulation of your progress this far. Reload Page to see new Data.
+                    <Text style={{
+                        color: 'white', fontWeight: '500', paddingHorizontal: 10, paddingTop: 10
+                    }}>
+                        Here is a cumulation of your progress this far.Reload Page to see new Data.
                     </Text>
                 </View>
                 <View style={{ height: 250, flexDirection: 'row', backgroundColor: '#FFA386', padding: 25, marginHorizontal: 30, borderBottomLeftRadius: 10, borderBottomRightRadius: 10 }}>
                     <YAxis
                         data={invertedConfidenceValues} // Use inverted values
-                        svg={{ fontSize: 10, fill: 'white', fontWeight: '600' }}
+                        svg={{
+                            fontSize: 10, fill: 'white', fontWeight: '600'
+                        }}
                         numberOfTicks={10}
                         formatLabel={(value, index) => index === 0 ? '' : `${value.toFixed(0)}%`} // Customize format for y-axis labels
                         min={0} // Set the minimum value of the y-axis to 0
@@ -274,7 +281,9 @@ export default function Chart({ navigation, route }) {
                             data={invertedConfidenceValues} // Use inverted values
                             formatLabel={(value, index) => (index + 1).toString()} // Display index number
                             contentInset={{ left: 10, right: 10 }} // Adjust content inset for better visibility
-                            svg={{ fontSize: 10, fill: 'white', fontWeight: '600' }} // Style the x-axis labels with white color and font weight 500
+                            svg={{
+                                fontSize: 10, fill: 'white', fontWeight: '600'
+                            }} // Style the x-axis labels with white color and font weight 500
                             style={{ paddingTop: 10, marginHorizontal: 10 }} // Adjust style to align labels properly
                         />
                     </View>
@@ -295,7 +304,9 @@ export default function Chart({ navigation, route }) {
                         <YAxis
 
                             data={form1} // Use inverted values
-                            svg={{ fontSize: 10, fill: '#895C5B', fontWeight: '600' }}
+                            svg={{
+                                fontSize: 10, fill: '#895C5B', fontWeight: '600'
+                            }}
                             numberOfTicks={10} // Adjust the number of ticks as needed
                             formatLabel={(value, index) => index + 1 === 0 ? '' : `${value.toFixed(0)}`} // Customize format for y-axis labels
                             min={0} // Set the minimum value of the y-axis to 0
@@ -317,7 +328,9 @@ export default function Chart({ navigation, route }) {
                                 data={form1} // Use inverted values
                                 formatLabel={(value, index) => (index + 1).toString()} // Display index number
                                 contentInset={{ left: 10, right: 10 }} // Adjust content inset for better visibility
-                                svg={{ fontSize: 10, fill: '#895C5B', fontWeight: '600' }} // Style the x-axis labels with white color and font weight 500
+                                svg={{
+                                    fontSize: 10, fill: '#895C5B', fontWeight: '600'
+                                }} // Style the x-axis labels with white color and font weight 500
                                 style={{ paddingTop: 10, marginHorizontal: 10 }} // Adjust style to align labels properly
                             />
                         </View>
@@ -337,7 +350,9 @@ export default function Chart({ navigation, route }) {
                         <YAxis
 
                             data={form2} // Use inverted values
-                            svg={{ fontSize: 10, fill: '#895C5B', fontWeight: '600' }}
+                            svg={{
+                                fontSize: 10, fill: '#895C5B', fontWeight: '600'
+                            }}
                             numberOfTicks={10} // Adjust the number of ticks as needed
                             formatLabel={(value, index) => index + 1 === 0 ? '' : `${value.toFixed(0)}`} // Customize format for y-axis labels
                             min={0} // Set the minimum value of the y-axis to 0
@@ -359,7 +374,9 @@ export default function Chart({ navigation, route }) {
                                 data={form2} // Use inverted values
                                 formatLabel={(value, index) => (index + 1).toString()} // Display index number
                                 contentInset={{ left: 10, right: 10 }} // Adjust content inset for better visibility
-                                svg={{ fontSize: 10, fill: '#895C5B', fontWeight: '600' }} // Style the x-axis labels with white color and font weight 500
+                                svg={{
+                                    fontSize: 10, fill: '#895C5B', fontWeight: '600'
+                                }} // Style the x-axis labels with white color and font weight 500
                                 style={{ paddingTop: 10, marginHorizontal: 10 }} // Adjust style to align labels properly
                             />
                         </View>
@@ -378,7 +395,9 @@ export default function Chart({ navigation, route }) {
                         <YAxis
 
                             data={mfccmean} // Use inverted values
-                            svg={{ fontSize: 10, fill: '#895C5B', fontWeight: '600' }}
+                            svg={{
+                                fontSize: 10, fill: '#895C5B', fontWeight: '600'
+                            }}
                             numberOfTicks={10} // Adjust the number of ticks as needed
                             formatLabel={(value, index) => index + 1 === 0 ? '' : `${value.toFixed(0)}`} // Customize format for y-axis labels
                             min={-20} // Set the minimum value of the y-axis to 0
@@ -400,7 +419,9 @@ export default function Chart({ navigation, route }) {
                                 data={mfccmean} // Use inverted values
                                 formatLabel={(value, index) => (index + 1).toString()} // Display index number
                                 contentInset={{ left: 10, right: 10 }} // Adjust content inset for better visibility
-                                svg={{ fontSize: 10, fill: '#895C5B', fontWeight: '600' }} // Style the x-axis labels with white color and font weight 500
+                                svg={{
+                                    fontSize: 10, fill: '#895C5B', fontWeight: '600'
+                                }} // Style the x-axis labels with white color and font weight 500
                                 style={{ paddingTop: 10, marginHorizontal: 10 }} // Adjust style to align labels properly
                             />
                         </View>
@@ -419,7 +440,9 @@ export default function Chart({ navigation, route }) {
                         <YAxis
 
                             data={mfccvar} // Use inverted values
-                            svg={{ fontSize: 10, fill: '#895C5B', fontWeight: '600' }}
+                            svg={{
+                                fontSize: 10, fill: '#895C5B', fontWeight: '600'
+                            }}
                             numberOfTicks={8} // Adjust the number of ticks as needed
                             formatLabel={(value, index) => index + 1 === 0 ? '' : `${value.toFixed(0)}`} // Customize format for y-axis labels
                             min={0} // Set the minimum value of the y-axis to 0
@@ -441,7 +464,9 @@ export default function Chart({ navigation, route }) {
                                 data={mfccvar} // Use inverted values
                                 formatLabel={(value, index) => (index + 1).toString()} // Display index number
                                 contentInset={{ left: 10, right: 10 }} // Adjust content inset for better visibility
-                                svg={{ fontSize: 10, fill: '#895C5B', fontWeight: '600' }} // Style the x-axis labels with white color and font weight 500
+                                svg={{
+                                    fontSize: 10, fill: '#895C5B', fontWeight: '600'
+                                }} // Style the x-axis labels with white color and font weight 500
                                 style={{ paddingTop: 10, marginHorizontal: 10 }} // Adjust style to align labels properly
                             />
                         </View>
@@ -460,7 +485,9 @@ export default function Chart({ navigation, route }) {
                         <YAxis
 
                             data={pitchp} // Use inverted values
-                            svg={{ fontSize: 10, fill: '#895C5B', fontWeight: '600' }}
+                            svg={{
+                                fontSize: 10, fill: '#895C5B', fontWeight: '600'
+                            }}
                             numberOfTicks={8} // Adjust the number of ticks as needed
                             formatLabel={(value, index) => index + 1 === 0 ? '' : `${value.toFixed(0)}x10^-4`} // Customize format for y-axis labels
                             min={0} // Set the minimum value of the y-axis to 0
@@ -482,7 +509,9 @@ export default function Chart({ navigation, route }) {
                                 data={pitchp} // Use inverted values
                                 formatLabel={(value, index) => (index + 1).toString()} // Display index number
                                 contentInset={{ left: 10, right: 10 }} // Adjust content inset for better visibility
-                                svg={{ fontSize: 10, fill: '#895C5B', fontWeight: '600' }} // Style the x-axis labels with white color and font weight 500
+                                svg={{
+                                    fontSize: 10, fill: '#895C5B', fontWeight: '600'
+                                }} // Style the x-axis labels with white color and font weight 500
                                 style={{ paddingTop: 10, marginHorizontal: 10 }} // Adjust style to align labels properly
                             />
                         </View>
@@ -565,6 +594,7 @@ const styles = StyleSheet.create({
         // marginTop: 40,
     },
     featuresvalues: {
+        //fontFamily: "Montserrat",
         fontSize: 14,
         color: '#2EAAAE',
         fontWeight: '700',
@@ -634,7 +664,7 @@ const styles = StyleSheet.create({
     },
     profileDescription: {
         color: 'white',
-        //font-family: Montserrat,
+
         fontSize: 18,
         //fontStyle: normal,
         fontWeight: '700',
@@ -644,6 +674,7 @@ const styles = StyleSheet.create({
     profileSubheading: {
         color: 'white',
         //fontFamily: '',
+        //fontFamily: "Montserrat",
         fontSize: 14,
         //fontStyle: normal,
         fontWeight: '300',

@@ -1,5 +1,5 @@
 import { StatusBar } from 'expo-status-bar';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { StyleSheet, Text, View, Image, TextInput, SafeAreaView } from 'react-native';
 import WelcomeScreen from './screens/WelcomeScreen';
 import { Dropdown } from 'react-native-element-dropdown';
@@ -7,7 +7,12 @@ import AntDesign from '@expo/vector-icons/AntDesign';
 import { NavigationContainer } from '@react-navigation/native';
 import { MyStack } from "./navigation/MainStackNavigator";
 //import firebase from '@react-native-firebase/app';
-
+import * as Font from 'expo-font';
+import { useFonts } from 'expo-font';
+import AppLoading from 'expo-app-loading';
+let customFonts = {
+  'Montserrat': require('./assets/fonts/Montserrat.ttf'),
+};
 
 /*
 const firebaseConfig = {
@@ -27,9 +32,19 @@ if (!firebase.apps.length) {
 */
 
 export default function App() {
+
+  async function loadFonts() {
+    await Font.loadAsync({
+      'Montserrat': require('./assets/fonts/Montserrat.ttf'),
+    });
+  }
+
+  useEffect(() => {
+    loadFonts();
+  }, []);
+
   return (
     <NavigationContainer>
-      {/* <StatusBar barStyle="dark-content" backgroundColor="white" /> */}
       <MyStack />
     </NavigationContainer>
   );

@@ -78,6 +78,7 @@ const styles = StyleSheet.create({
     accountInfo: {
         //flex: 1,
         flexDirection: 'row',
+
         borderTopLeftRadius: 30,
         borderTopRightRadius: 30,
         marginTop: 5,
@@ -96,16 +97,19 @@ const styles = StyleSheet.create({
     },
     imgDescripCont: {
         flexDirection: 'row',
+
         height: 60,
 
     },
     accountInfoContainer: {
+
         margin: 20,
         // height: 60,
         justifyContent: 'center',
     },
     profilePic: {
         width: 60,
+
         height: 60,
         borderRadius: 50,
         borderWidth: 2,
@@ -113,7 +117,8 @@ const styles = StyleSheet.create({
     },
     profileDescription: {
         color: 'white',
-        //font-family: Montserrat,
+
+
         fontSize: 20,
         //fontStyle: normal,
         fontWeight: '700',
@@ -124,7 +129,10 @@ const styles = StyleSheet.create({
     profileSubheading: {
         color: 'white',
         //fontFamily: '',
+
+        //fontFamily: "Montserrat",
         fontSize: 14,
+
         //fontStyle: normal,
         fontWeight: '400',
         lineHeight: 15, /* 123.333% */

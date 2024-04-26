@@ -118,6 +118,8 @@ export default function CalendarComp({ userType, appointments, idx }) {
                             style={{
                                 color: isPastAppointment ? '#94A3B8' : '#F08462',
                                 fontWeight: '700',
+
+                                //fontFamily: "Montserrat",
                                 fontSize: 14,
                                 marginBottom: 15,
                                 // width: '80%', // Adjust the width here to accommodate longer text

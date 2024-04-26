@@ -117,7 +117,7 @@ const styles = StyleSheet.create({
     },
     profileDescription: {
         color: 'black',
-        //font-family: Montserrat,
+
         fontSize: 18,
         //fontStyle: normal,
         fontWeight: '700',
@@ -127,6 +127,7 @@ const styles = StyleSheet.create({
     profileSubheading: {
         color: 'black',
         //fontFamily: '',
+        //fontFamily: "Montserrat",
         fontSize: 14,
         //fontStyle: normal,
         fontWeight: '300',
