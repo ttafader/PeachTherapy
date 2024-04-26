@@ -1,28 +1,44 @@
-import React, { Component, useEffect } from 'react';
+import React, { Component, useEffect, useState } from 'react';
 import { Alert, Button, TouchableHighlight, StyleSheet, Text, View, Image, TextInput, SafeAreaView, AreaChart, Pressable } from 'react-native';
-import { isUserSignedIn } from '../apis/authenticationAPIs';
+import { getUserDetails, isUserSignedIn } from '../apis/authenticationAPIs';
 import ProfileHeader from './ProfileHeader';
 
 export default function PatientNavComp({ navigation, colorBG }) {
 
+  const [patient, setPatient] = useState({})
+
   useEffect(() => {
-    if (!isUserSignedIn()) navigation.replace("Login")
-  })
+    if (!isUserSignedIn()) navigation.replace("Login");
+
+    loadUserData()
+  }, [])
+
+  async function loadUserData() {
+    const pat = await getUserDetails()
+    setPatient(pat)
+  }
 
   function buttonClicked() {
     navigation.navigate('Account')
   }
   function goToRecordings() {
-    navigation.navigate('Waveform')
+    navigation.navigate('Waveform', {
+      patientObject: patient
+    })
   }
   function goToNotifs() {
     navigation.navigate('Notifications')
   }
   function goToCharts() {
-    navigation.navigate('DonutChart')
+    navigation.navigate('Chart', {
+      patientObject: patient
+    })
   }
   function goToCal() {
-    navigation.navigate('Calendar')
+    navigation.navigate('Calendar', {
+      mode: "patient",
+      patientObject: patient
+    })
   }
 
 

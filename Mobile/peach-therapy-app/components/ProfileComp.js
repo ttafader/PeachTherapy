@@ -5,48 +5,42 @@ import { getPerson } from '../utilities/database_functions'
 import { Text, StyleSheet, Pressable, View, Image, TouchableOpacity } from 'react-native';
 import moment from 'moment';
 
-export default function ProfileComp({ patients, navigation, idx }) {
+export default function ProfileComp({ navigation, patient_id }) {
     const [user, setUser] = useState({})
-    const [patientDetails, setPatientDetails] = useState({});
+    const [patientObject, setPatientObject] = useState({})
 
-    function detailsClicked() {
-        navigation.navigate('PatientDetails', { patientDetails: patientDetails });
+    const [patientName, setPatientName] = useState("Unknown")
+    const [imageDisplay, setImageDisplay] = useState("Unknown")
+    const [birthDate, setBirthdate] = useState("Unknown")
+
+    function viewProfileClicked() {
+        navigation.navigate('ClinicianMenu', { patientObject: patientObject });
         // Navigate to 'PatientDetails' screen and pass patientDetails as a parameter
     }
 
     useEffect(() => {
         async function fetchData() {
-            const tempUser = await getUserDetails();
-            setUser(tempUser);
-            loadPatientDetails(tempUser.patients[idx]);
+            try {
+                const tempArray = await getPerson(2, 'number', patient_id);
+                const temp = tempArray[0];
+                setPatientObject(temp)
+                processPatientObject(temp)
+            } catch (error) {
+                console.error("Error fetching patient details:", error);
+            }
         }
         fetchData();
     }, []);
 
-    async function loadPatientDetails(uid) {
-        try {
-            const tempArray = await getPerson(2, 'number', uid);
-            const temp = tempArray[0];
-            if (temp && temp.profile && temp.profile.first_name && temp.profile.last_name && temp.profile.img_url) {
-                setPatientDetails({
-                    patientName: temp.profile.first_name + " " + temp.profile.last_name,
-                    imageDisplay: temp.profile.img_url,
-                    birthDate: temp.profile.birthday
-                });
-            } else {
-                setPatientDetails({
-                    patientName: "Unknown",
-                    imageDisplay: "Unknown",
-                    birthDate: "Unknown"
-                });
-            }
-        } catch (error) {
-            console.error("Error fetching patient details:", error);
-            setPatientDetails({
-                patientName: "Unknown",
-                imageDisplay: "Unknown",
-                birthDate: "Unknown"
-            });
+    function processPatientObject(obj) {
+        if (obj &&
+            obj.profile &&
+            obj.profile.first_name &&
+            obj.profile.last_name &&
+            obj.profile.img_url) {
+            setPatientName(obj.profile.first_name + " " + obj.profile.last_name)
+            setImageDisplay(obj.profile.img_url)
+            setBirthdate(obj.profile.birthday)
         }
     }
 
@@ -54,17 +48,17 @@ export default function ProfileComp({ patients, navigation, idx }) {
         <Pressable style={[styles.singleRecording]}>
             <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
                 <View style={{ justifyContent: 'center', alignItems: 'center', padding: 25, width: "70%" }}>
-                    <Image src={patientDetails.imageDisplay} style={styles.profilePic} />
+                    <Image src={imageDisplay} style={styles.profilePic} />
                     <Text style={{ color: '#FFA386', textAlign: 'center', fontWeight: '700', fontSize: 24, maxWidth: 200 }}>
-                        {patientDetails.patientName}
+                        {patientName}
                     </Text>
                     <Text style={{ color: '#FFA386', fontWeight: '500', maxWidth: 200 }}>
-                        {patientDetails.birthDate}
+                        {birthDate}
                     </Text>
                 </View>
             </View>
-            <Pressable style={[styles.button]} onPress={detailsClicked}>
-                <Text style={[styles.text]}> View Profile</Text>
+            <Pressable style={[styles.button]} onPress={viewProfileClicked}>
+                <Text style={[styles.text]}>View Profile</Text>
             </Pressable>
         </Pressable>
     )

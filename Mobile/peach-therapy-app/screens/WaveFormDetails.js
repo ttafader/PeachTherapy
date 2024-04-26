@@ -36,7 +36,7 @@ export default function WaveFormDetails({ navigation, props }) {
 
   }
   function goToChart() {
-    navigation.navigate('DonutChart')
+    navigation.navigate('Chart')
 
   }
   function goToNotifs() {

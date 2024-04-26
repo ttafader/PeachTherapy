@@ -11,7 +11,7 @@ import WaveformComp from './WaveformComp';
 
 
 export default function AudioComp({ navigation, recording, idx }) {
-    const [user, setUser] = useState({})
+    const [user, setUser] = useState([])
 
     const [sound, setSound] = useState();
     const [soundData, setSoundData] = useState();
@@ -81,19 +81,19 @@ export default function AudioComp({ navigation, recording, idx }) {
 
     useEffect(() => {
         async function loadSoundData() {
-            console.log('loading', recording.text_url)
+            // console.log('loading', recording.text_url)
             const lines = await getTextFileFromStorage(recording.text_url);
             setSoundData(lines)
         }
         loadSoundData()
     }, []);
 
-    return recording.phrase && (
+    return recording && (
         <Pressable style={[styles.singleRecording, containerStyle]}>
-            <TouchableOpacity onPress={buttonClicked}>
+            <TouchableOpacity onPress={buttonClicked} style={{ marginBottom: 20 }}>
                 <Text style={[styles.text, textStyle]}>{detailsText}</Text>
             </TouchableOpacity>
-            <View style={{ flexDirection: 'row' }}>
+            <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
                 <Text style={{ fontSize: 80, lineHeight: 80, marginLeft: 50, color: '#FFA386', opacity: 0.6, fontWeight: '500', marginTop: 10, ...textStyle }}>
                     {idx < 9 ? `0${idx + 1}` : idx + 1}
                 </Text>
@@ -110,9 +110,12 @@ export default function AudioComp({ navigation, recording, idx }) {
             {showDetails && (
                 <View>
                     {/* <Button title="Print Text" onPress={getSoundData} /> */}
-                    <Text style={{ color: '#FFA386', marginBottom: 10, marginHorizontal: 20, fontWeight: '500', ...textStyle }}>
-                        Phrase: "{recording.phrase}"
-                    </Text>
+                    <View style={{ backgroundColor: 'white', padding: 15, borderRadius: 20, marginBottom: 10, ...textStyle }}>
+
+                        <Text style={{ color: '#FFA386', marginHorizontal: 20, fontWeight: '500', textAlign: 'center', ...textStyle }}>
+                            Phrase: "{recording.phrase}"
+                        </Text>
+                    </View>
 
                     <View style={{
                         flexDirection: 'row',
@@ -146,7 +149,7 @@ export default function AudioComp({ navigation, recording, idx }) {
 const styles = StyleSheet.create({
     singleRecording: {
         width: "90%",
-        padding: 20,
+        padding: 30,
         marginTop: 20,
         marginHorizontal: 20,
         backgroundColor: '#FEE7DD',

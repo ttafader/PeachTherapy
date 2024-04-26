@@ -10,7 +10,7 @@ import Tutorial from '../screens/Tutorial';
 import TermsNConditions from '../screens/TermsNConditions';
 import Notifications from '../screens/Notifications';
 import Calendar from '../screens/Calendar';
-import DonutChart from '../screens/DonutChart';
+import Chart from '../screens/Chart';
 import DemoScreen from '../screens/DemoScreen';
 // import PatientsGallery from '../screens/PatientsGallery';
 import WaveFormDetails from '../screens/WaveFormDetails';
@@ -20,6 +20,7 @@ import PatientsGallery from '../screens/PatientsGallery';
 import ClinicianMenu from '../screens/ClinicianMenu';
 import PatientDetailsScreen from '../screens/PatientDetailsScreen';
 import ProfileComp from '../components/ProfileComp';
+import PatientInformation from '../screens/PatientInformation';
 
 const Stack = createNativeStackNavigator();
 
@@ -33,13 +34,12 @@ export function MyStack() {
                 animation: 'none'
             }}
 
-            initialRouteName="ProfileComp"
         >
-            <Stack.Screen
+            {/* <Stack.Screen
                 name='Demo'
                 component={DemoScreen}
                 options={{ title: 'Demo' }}
-            />
+            /> */}
             <Stack.Screen
                 name="Welcome"
                 component={WelcomeScreen}
@@ -54,6 +54,11 @@ export function MyStack() {
                 name='Waveform'
                 component={WaveformScreen}
                 options={{ title: 'Waveform' }}
+            />
+            <Stack.Screen
+                name='PatientInformation'
+                component={PatientInformation}
+                options={{ title: 'PatientInformation' }}
             />
             <Stack.Screen
                 name='PatientsGallery'
@@ -91,9 +96,9 @@ export function MyStack() {
                 options={{ title: 'AudioScreen' }}
             /> */}
             <Stack.Screen
-                name='DonutChart'
-                component={DonutChart}
-                options={{ title: 'Charts' }}
+                name='Chart'
+                component={Chart}
+                options={{ title: 'Chart' }}
             />
             <Stack.Screen
                 name='Settings'

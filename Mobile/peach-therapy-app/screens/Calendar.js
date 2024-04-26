@@ -9,10 +9,14 @@ import { getUserDetails } from '../apis/authenticationAPIs'
 import BackButton from '../components/BackButton';
 import CalendarComp from '../components/CalendarComp';
 import { getPerson, getMyAppointments } from '../utilities/database_functions'
+import ClinicianHeader from '../components/ClinicianHeader';
 
-export default function Calendar({ navigation, props }) {
+export default function Calendar({ navigation, route }) {
+
+  const { mode, patientObject } = route.params
+
   //for condiitonals
-  const [user, setUser] = useState({});
+  const [user, setUser] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
 
   // for appointments
@@ -20,8 +24,55 @@ export default function Calendar({ navigation, props }) {
 
   // NAZU - EXAMPLE OF SORTING
   useEffect(() => {
+    async function loadUserData() {
+      setUser(await getUserDetails());
+      setLoading(false);
+    }
+    loadUserData();
+  }, []);
+
+  useEffect(() => {
+    if (!isUserSignedIn()) navigation.replace("Login");
+
+    async function loadUserData() {
+      setAppointments(patientObject.appointments)
+    }
+    loadUserData();
+  }, []);
+
+  // useEffect(() => {
+  //   async function fetchData() {
+  //     // console.log(mode)
+  //     const myAppointments = []
+  //     if (mode === 'patient') {
+  //       myAppointments = await getMyAppointments(patientObject.profile.patient_id);
+  //     } else if (mode === 'doctor') {
+  //       myAppointments = await getMyAppointments(user.appointments.doctor_id)
+  //     }
+
+  //     console.log('heyy---------------------')
+  //     const sortedAppts = myAppointments.sort(function (a, b) {
+  //       return new Date(b.date_time) - new Date(a.date_time);
+  //     });
+
+  //     setAppointments(sortedAppts);
+  //   }
+
+  //   fetchData();
+  // }, []);
+
+  useEffect(() => {
     async function fetchData() {
-      const myAppointments = await getMyAppointments();
+      let myAppointments = []; // Changed from `const` to `let`
+
+      // Ensure variables `mode`, `patientObject`, and `user` are defined
+      if (mode === 'patient') {
+        myAppointments = await getMyAppointments(patientObject.profile.patient_id);
+      } else if (mode === 'doctor') {
+        myAppointments = await getMyAppointments(patientObject.appointments.doctor_id);
+      }
+
+      console.log('heyy---------------------');
       const sortedAppts = myAppointments.sort(function (a, b) {
         return new Date(b.date_time) - new Date(a.date_time);
       });
@@ -30,20 +81,8 @@ export default function Calendar({ navigation, props }) {
     }
 
     fetchData();
-  }, []);
+  }, []); // Dependencies array is empty, indicating this effect runs once on mount.
 
-  console.log(appointments)
-  useEffect(() => {
-    if (!isUserSignedIn()) {
-      navigation.replace("Login");
-    } else {
-      loadUserData();
-    }
-  }, []);
-
-  const loadUserData = async () => {
-    setUser(await getUserDetails());
-  }
 
   const handleRefresh = async () => {
     console.log('Refreshing...');
@@ -58,18 +97,7 @@ export default function Calendar({ navigation, props }) {
       setRefreshing(false); // Reset refreshing state on unmount
     };
   }, []);
-  function buttonClicked() {
-    navigation.navigate('Account')
-  }
-  function goToChart() {
-    navigation.navigate('DonutChart')
-  }
-  function goToNotifs() {
-    navigation.navigate('Notifications')
-  }
-  function goToRecordings() {
-    navigation.navigate('Waveform')
-  }
+
   return (//all
     <ScrollView style={{ flex: 1 }}
       refreshControl={
@@ -88,6 +116,8 @@ export default function Calendar({ navigation, props }) {
       </View>
 
       <ProfileHeader colorBG={'#FFA386'} />
+      {user?.profile?.user_type === 1 && <ClinicianHeader colorBG={'#24A8AC'} patientObject={patientObject} />}
+
       <BackButton navigation={navigation} colorBG={'#FFA386'}></BackButton>
       <View style={styles.pageContainer}>
 
@@ -95,11 +125,12 @@ export default function Calendar({ navigation, props }) {
           Your Upcoming Appointments
         </Text>
 
-        {
+        {appointments && Object.keys(appointments).length > 0 ?
           Object.keys(appointments).map((apt_id, idx) =>
             (<CalendarComp idx={idx} refreshControl appointments={appointments[apt_id]} />)
-          )
-        }
+          ) : (
+            <Text style={styles.noRecordings}>No appointments{'\n'}available at this time</Text>
+          )}
         {/* <CalendarComp></CalendarComp> */}
 
 
@@ -114,7 +145,12 @@ export default function Calendar({ navigation, props }) {
 
 
 const styles = StyleSheet.create({
-
+  noRecordings: {
+    fontWeight: "700",
+    color: '#FFA386',
+    fontSize: 16,
+    textAlign: 'center',
+  },
   wholePage: {
     flex: 1,
   },

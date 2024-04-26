@@ -1,29 +1,48 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-export async function getMyAppointments() {
-    let myAppointments = []
+// export async function getMyAppointments(person_id) {
+//     let myAppointments = []
 
-    const me = JSON.parse(await AsyncStorage.getItem('user-details'))
-    const pull = JSON.parse(await AsyncStorage.getItem("temp-db-pull"))
+//     // const me = JSON.parse(await AsyncStorage.getItem('user-details'))
+//     const pull = JSON.parse(await AsyncStorage.getItem("temp-db-pull"))
+//     console.log('heyy')
+//     myAppointments = Object.values(pull['appointmentData']).filter(
+//         appt => appt['doctor_id'] == person_id ||
+//             appt['patient_id'] == person_id
+//     )
 
-    //troubleshooting
-    // console.log("Value of 'me':", me);
-    // if (me && me.profile) {
-    //     console.log("Value of 'user_id':", me.profile.user_id);
-    // } else {
-    //     console.log("Either 'me' or 'me.profile' is undefined");
-    // }
+//     return myAppointments
+// }
+export async function getMyAppointments(person_id) {
+    try {
+        let myAppointments = [];
 
-    // console.log("testing here:", me.profile.patient_id || me.profile.doctor_id);
+        // Retrieve data from AsyncStorage
+        const pull = JSON.parse(await AsyncStorage.getItem("temp-db-pull"));
+        console.log('Retrieved data:', pull);
 
-    myAppointments = Object.values(pull['appointmentData']).filter(
-        appt => appt['patient_id'] == me.profile.patient_id
-            || appt['doctor_id'] == me.profile.doctor_id
-            || appt['doctor_id'] == me.profile.user_id
-            || appt['patient_id'] == me.profile.user_id)
+        // Check if appointment data is available and structured correctly
+        if (pull && pull['appointmentData']) {
+            myAppointments = Object.values(pull['appointmentData']).filter(
+                appt => appt['doctor_id'] == person_id || appt['patient_id'] == person_id
+            );
+        } else {
+            console.error('Error: Appointment data is missing or structured incorrectly.');
+            // Throw an error or return an empty array based on the application logic
+            return [];
+        }
 
-    return myAppointments
+        console.log('Filtered appointments:', myAppointments);
+        return myAppointments;
+    } catch (error) {
+        console.error('Error fetching appointments:', error);
+        return []; // Return an empty array in case of an error
+    }
 }
+
+
+
+
 export async function getMyPatients() {
     try {
         let myPatients = [];

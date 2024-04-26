@@ -99,9 +99,9 @@ export default function AccountPersonalSettings({ navigation, props }) {
         <Pressable style={styles.accentButton} onPress={() => buttonClicked()}>
           <Text style={styles.accentButtonText}>Back to Account</Text>
         </Pressable>
-        <Pressable style={styles.accentButtonLogout} onPress={() => logoutButtonClicked()}>
+        {/* <Pressable style={styles.accentButtonLogout} onPress={() => logoutButtonClicked()}>
           <Text style={styles.accentButtonText}>Logout</Text>
-        </Pressable>
+        </Pressable> */}
         <View style={styles.buttonContainer}>
         </View>
       </View>
@@ -110,10 +110,10 @@ export default function AccountPersonalSettings({ navigation, props }) {
       <View style={{ borderBottomWidth: 1, borderColor: '#24A8AC', flexDirection: 'row', }}>
         <View style={{ width: '60%', height: 150, justifyContent: 'center', marginLeft: 20, }}>
           <Text style={styles.title}>
-            Push Notifications
+            Reports
           </Text>
           <Text style={styles.body}>
-            You may need to enable push notifications in your phone settings.
+            Send Crash Reports Automatically.
           </Text>
         </View>
 
@@ -130,10 +130,10 @@ export default function AccountPersonalSettings({ navigation, props }) {
       <View style={{ borderBottomWidth: 1, borderColor: '#24A8AC', flexDirection: 'row', }}>
         <View style={{ width: '60%', height: 150, justifyContent: 'center', marginLeft: 20, }}>
           <Text style={styles.title}>
-            Microphone Access
+            Access Offline
           </Text>
           <Text style={styles.body}>
-            You may need to enable microphone access in your phone settings.
+            Would you like to acces voice files offline?
           </Text>
         </View>
 
@@ -147,7 +147,7 @@ export default function AccountPersonalSettings({ navigation, props }) {
           />
         </View>
       </View>
-      <View style={{ borderBottomWidth: 1, borderColor: '#24A8AC', flexDirection: 'row', }}>
+      {/* <View style={{ borderBottomWidth: 1, borderColor: '#24A8AC', flexDirection: 'row', }}>
         <View style={{ width: '60%', height: 150, justifyContent: 'center', marginLeft: 20, }}>
           <Text style={styles.title}>
             App Apperance
@@ -166,22 +166,22 @@ export default function AccountPersonalSettings({ navigation, props }) {
             value={isEnabled}
           />
         </View>
-      </View>
+      </View> */}
 
 
-      <View style={{ borderBottomWidth: 1, borderColor: '#24A8AC', flexDirection: 'column', paddingBottom: 20, paddingHorizontal: 20, justifyContent: 'space-around' }}>
+      <View style={{ borderBottomWidth: 1, marginBottom: 200, borderColor: '#24A8AC', flexDirection: 'column', paddingBottom: 20, paddingHorizontal: 20, justifyContent: 'space-around' }}>
         <View style={{ marginVertical: 20 }}>
           <Text style={styles.title}>
-            Text Notifications
+            Notifications
           </Text>
           <Text style={styles.body}>
-            Would you like to receive text notifications for appointments, account changes and in-app messages from the Clinician?
+            Would you like to receive text, email or notifications as you enter the app for appointments, account changes and in-app messages from the Clinician?
           </Text>
         </View>
         <DropdownComponent style={{ margin: 40 }} />
 
       </View>
-      <View style={{ borderBottomWidth: 1, borderColor: '#24A8AC', flexDirection: 'row', }}>
+      {/* <View style={{ borderBottomWidth: 1, borderColor: '#24A8AC', flexDirection: 'row', }}>
         <View style={{ width: '60%', height: 150, justifyContent: 'center', marginLeft: 20, }}>
           <Text style={styles.title}>
             Email Notifications
@@ -200,8 +200,8 @@ export default function AccountPersonalSettings({ navigation, props }) {
             value={isEnabled}
           />
         </View>
-      </View>
-      <View style={{ borderBottomWidth: 1, borderColor: '#24A8AC', flexDirection: 'row', }}>
+      </View> */}
+      {/* <View style={{ borderBottomWidth: 1, borderColor: '#24A8AC', flexDirection: 'row', }}>
         <View style={{ width: '60%', height: 150, justifyContent: 'center', marginLeft: 20, }}>
           <Text style={styles.title}>
             Secure Messaging
@@ -220,7 +220,7 @@ export default function AccountPersonalSettings({ navigation, props }) {
             value={isEnabled}
           />
         </View>
-      </View>
+      </View> */}
 
 
     </ScrollView>

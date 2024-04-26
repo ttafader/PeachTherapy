@@ -1,116 +1,98 @@
 import { Text, TouchableHighlight, SafeAreaView, StyleSheet, Pressable, View, Image, ScrollView, Button, TouchableOpacity, RefreshControl } from 'react-native';
 import React, { Component, useEffect, useState } from 'react';
-import { isUserSignedIn } from '../apis/authenticationAPIs';
+import { getUserDetails, isUserSignedIn } from '../apis/authenticationAPIs';
 import ProfileHeader from '../components/ProfileHeader';
 //for conditionals
 import PatientNavComp from '../components/PatientNavComp';
 import ClinicianNavComp from '../components/ClinicianNavComp';
-import { getUserDetails } from '../apis/authenticationAPIs'
-
-import { pullAllPatientsData } from '../apis/databaseAPIs';
-import AudioComp from '../components/AudioComp';
-import ProfileComp from '../components/ProfileComp';
 import ClinicianHeader from '../components/ClinicianHeader';
 import BackButton from '../components/BackButton';
 
-export default function ClinicianMenu({ navigation, props }) {
-  const [patients, setPatients] = useState({})
-  const [recordings, setRecordings] = useState({})
-  const [loading, setLoading] = useState(true)
-  const [refreshing, setRefreshing] = useState(false);
+export default function ClinicianMenu({ navigation, route }) {
+  const { patientObject } = route.params
 
-  //for condiitonals
-  const [user, setUser] = useState({});
+
+  const [user, setUser] = useState([]);
+
+  useEffect(() => {
+    if (!isUserSignedIn()) navigation.replace("Login");
+    loadUserData()
+  }, [])
+
+  async function loadUserData() {
+    const dets = await getUserDetails()
+    setUser(dets)
+  }
+
   useEffect(() => {
     if (!isUserSignedIn()) {
       navigation.replace("Login");
     } else {
-      loadUserData();
     }
   }, []);
 
-  const loadUserData = async () => {
-    setUser(await getUserDetails());
+
+  function goToPatientRecordings() {
+    navigation.navigate('Waveform', {
+      patientObject: patientObject
+    })
+  }
+  function goToPatientCharts() {
+    navigation.navigate('Chart', {
+      patientObject: patientObject
+    })
   }
 
-  const handleRefresh = async () => {
-    console.log('Refreshing...');
-    setRefreshing(true);
-    await loadUserData();
-    setRefreshing(false);
-    console.log('Refreshed!');
+  function goToPatientCalendar() {
+    navigation.navigate('Calendar', {
+      mode: "doctor",
+      patientObject: patientObject
+    })
   }
-
-  useEffect(() => {
-    return () => {
-      setRefreshing(false); // Reset refreshing state on unmount
-    };
-  }, []);
-
-
-  useEffect(() => {
-    setLoading(true)
-
-
-    if (!isUserSignedIn()) navigation.replace("Login")
-    loadUserData();
-    setLoading(false)
-
-    async function loadUserData() {
-      const dets = await getUserDetails()
-      setPatients(dets['patients'])
-
-    }
-
-  }, [])
-
-
+  function goToPatientInformation() {
+    navigation.navigate('PatientInformation', {
+      mode: "doctor",
+      patientObject: patientObject
+    })
+  }
 
   return (
-    <ScrollView style={{ flex: 1 }}
-      refreshControl={
-        <RefreshControl
-          refreshing={refreshing}
-          onRefresh={handleRefresh}
-          colors={['#0000ff']}
-        />
-      }
-    >
+    <ScrollView style={{ flex: 1 }}>
       <View style={styles.wholePage}>
         <View style={styles.navBar}>
           {user?.profile?.user_type === 1 && <ClinicianNavComp navigation={navigation} colorBG={'#FFA386'} />}
-          {user?.profile?.user_type === 2 && <PatientNavComp navigation={navigation} colorBG={'#FFA386'} />}
+
         </View>
 
         <ProfileHeader colorBG={'#FFA386'} />
-        <ClinicianHeader colorBG={'#24A8AC'} />
+        <ClinicianHeader colorBG={'#24A8AC'} patientObject={patientObject} />
         <BackButton navigation={navigation} colorBG={'#24A8AC'}></BackButton>
 
         <View style={styles.pageContainer}>
 
-          <Pressable style={{ borderRadius: 10, margin: 10, width: 125, height: 125, backgroundColor: '#FFA386', justifyContent: 'center', alignItems: 'center' }}>
+          <Pressable onPress={() => goToPatientRecordings()} style={{ borderRadius: 10, margin: 10, width: 125, height: 125, backgroundColor: '#FFA386', justifyContent: 'center', alignItems: 'center' }}>
             <Text style={{ color: 'white' }}>Recordings</Text>
             <Image source={require('../assets/Vector-4.png')}
               style={styles.icon}
             />
           </Pressable>
 
-          <Pressable style={{ borderRadius: 10, margin: 10, width: 125, height: 125, backgroundColor: '#FFA386', justifyContent: 'center', alignItems: 'center' }}>
+          <Pressable onPress={() => goToPatientCharts()} style={{ borderRadius: 10, margin: 10, width: 125, height: 125, backgroundColor: '#FFA386', justifyContent: 'center', alignItems: 'center' }}>
             <Text style={{ color: 'white' }}>Charts</Text>
             <Image source={require('../assets/Vector.png')}
               style={styles.icon}
             />
           </Pressable>
 
-          <Pressable style={{ borderRadius: 10, margin: 10, width: 125, height: 125, backgroundColor: '#FFA386', justifyContent: 'center', alignItems: 'center' }}>
+          <Pressable onPress={() => goToPatientCalendar()} style={{ borderRadius: 10, margin: 10, width: 125, height: 125, backgroundColor: '#FFA386', justifyContent: 'center', alignItems: 'center' }}>
             <Text style={{ color: 'white' }}>Calendar</Text>
             <Image source={require('../assets/Vector-1.png')}
               style={styles.icon}
             />
           </Pressable>
 
-          <Pressable style={{ borderRadius: 10, margin: 10, width: 125, height: 125, backgroundColor: '#FFA386', justifyContent: 'center', alignItems: 'center' }}>
-            <Text style={{ color: 'white' }}>Notifications</Text>
+          <Pressable onPress={() => goToPatientInformation()} style={{ borderRadius: 10, margin: 10, width: 125, height: 125, backgroundColor: '#FFA386', justifyContent: 'center', alignItems: 'center' }}>
+            <Text style={{ color: 'white', textAlign: 'center' }}>Patient{'\n'}Information</Text>
             <Image source={require('../assets/Vector-2.png')}
               style={styles.icon}
             />

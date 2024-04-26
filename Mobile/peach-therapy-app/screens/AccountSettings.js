@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Alert, RefreshControl, Pressable, StyleSheet, Text, View, SafeAreaView, ScrollView } from 'react-native';
-import { isUserSignedIn, getUserDetails } from '../apis/authenticationAPIs';
+import { isUserSignedIn, getUserDetails, logout } from '../apis/authenticationAPIs';
 import ProfileHeader from '../components/ProfileHeader';
 import PatientNavComp from '../components/PatientNavComp';
 import ClinicianNavComp from '../components/ClinicianNavComp';
@@ -17,7 +17,11 @@ export default function AccountSettings({ navigation }) {
       loadUserData();
     }
   }, []);
+  async function logoutButtonClicked() {
+    await logout()
+    navigation.navigate('Login')
 
+  }
   const loadUserData = async () => {
     setUser(await getUserDetails());
   }
@@ -56,19 +60,22 @@ export default function AccountSettings({ navigation }) {
         <BackButton navigation={navigation} colorBG={'#24A8AC'} />
         <SafeAreaView style={styles.pageContainer}>
           <View style={styles.buttonContainer}>
+            <Pressable style={styles.accentButtonLogout} onPress={() => logoutButtonClicked()}>
+              <Text style={styles.accentButtonText}>Logout</Text>
+            </Pressable>
             <Pressable style={styles.button} onPress={() => navigation.navigate('Settings')}>
               <Text style={styles.text}>Account Settings</Text>
             </Pressable>
-            <Pressable style={styles.button} onPress={() => navigation.navigate('Tutorial')}>
+            {/* <Pressable style={styles.button} onPress={() => navigation.navigate('Tutorial')}>
               <Text style={styles.text}>Tutorials & How to’s</Text>
-            </Pressable>
+            </Pressable> */}
             <Pressable style={styles.button} onPress={() => navigation.navigate('Terms')}>
               <Text style={styles.text}>Terms & Conditions</Text>
             </Pressable>
           </View>
-          <Pressable style={styles.accentButton} onPress={() => Alert.alert('This Button Contacts Clinician')}>
+          {/* <Pressable style={styles.accentButton} onPress={() => Alert.alert('This Button Contacts Clinician')}>
             <Text style={styles.accentButtonText}>Contact Your Clinician</Text>
-          </Pressable>
+          </Pressable> */}
         </SafeAreaView>
       </ScrollView>
     </View>
@@ -98,6 +105,17 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     borderColor: '#24A8AC',
     borderWidth: 2,
+  },
+  accentButtonLogout: {
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    marginTop: 20,
+    paddingVertical: 20,
+    paddingHorizontal: 32,
+    width: '100%',
+    backgroundColor: '#78D6D9',
+    borderRadius: 10,
+    marginBottom: 40,
   },
   text: {
     color: '#24A8AC',

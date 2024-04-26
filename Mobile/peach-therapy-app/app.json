@@ -2,35 +2,44 @@
   "expo": {
     "name": "peach-therapy-app",
     "slug": "peach-therapy-app",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/peeach-06.png",
     "userInterfaceStyle": "light",
     "splash": {
-      "image": "./assets/splash.png",
+      "image": "./assets/peeach-08-min.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#FFF6F3"
     },
     "assetBundlePatterns": [
       "**/*"
     ],
     "ios": {
+      "bundleIdentifier": "com.nazurazu.peachtherapyapp",
+      "buildNumber": "3.0.1",
       "supportsTablet": false
     },
     "android": {
+      "package": "com.nazurazu.peachtherapyapp",
+      "versionCode": 5,
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
-      },
-      "package": "com.nazurazu.peachtherapyapp"
+        "foregroundImage": "./assets/peeach-08-min.png",
+        "backgroundColor": "#FFF6F3"
+      }
     },
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/peeach-06.png"
     },
     "extra": {
       "eas": {
         "projectId": "fba503a7-1528-4731-a262-834335c82fb4"
       }
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/fba503a7-1528-4731-a262-834335c82fb4"
     }
   }
 }

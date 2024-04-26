@@ -56,7 +56,7 @@ export default function DemoScreen({ navigation }) {
                     <NavButton navigation={navigation} pageName={"Terms"} destination={'Terms'} />
                     <NavButton navigation={navigation} pageName={"Calendar"} destination={'Calendar'} />
                     <NavButton navigation={navigation} pageName={"Notifications"} destination={'Notifications'} />
-                    <NavButton navigation={navigation} pageName={"Charts"} destination={'DonutChart'} />
+                    <NavButton navigation={navigation} pageName={"Chart"} destination={'Chart'} />
                     {/* <NavButton navigation={navigation} pageName={"Firebase"} destination={'Statistics'} /> */}
                     <NavButton navigation={navigation} pageName={"Waveform"} destination={'Waveform'} />
                     <NavButton navigation={navigation} pageName={"Details"} destination={'WaveFormDetails'} />

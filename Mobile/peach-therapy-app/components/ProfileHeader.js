@@ -4,7 +4,7 @@ import { getUserDetails } from '../apis/authenticationAPIs'
 import { getPerson } from '../utilities/database_functions'
 
 export default function ProfileHeader({ colorBG }) {
-    const [user, setUser] = useState({})
+    const [user, setUser] = useState([])
 
     const [doctorName, setDoctorName] = useState("")
 
@@ -92,13 +92,15 @@ const styles = StyleSheet.create({
     accountInfo: {
         //flex: 1,
         flexDirection: 'row',
+        borderRadius: 30,
+        marginHorizontal: 5,
         marginTop: 5,
-        padding: 10,
-        height: 100,
+        padding: 25,
+        height: 110,
         // backgroundColor: '#24A8AC',
         // backgroundColor: '#FFA386',
-        justifyContent: 'center',
-        alignItems: 'center',
+        // justifyContent: 'center',
+        // alignItems: 'center',
 
         shadowColor: 'black',
         shadowOffset: { width: 0, height: 0.5 },
@@ -106,7 +108,8 @@ const styles = StyleSheet.create({
         shadowRadius: 6,
     },
     accountInfoContainer: {
-        margin: 10,
+        margin: 20,
+        justifyContent: 'center',
     },
     profilePic: {
         width: 60,
@@ -118,18 +121,19 @@ const styles = StyleSheet.create({
     profileDescription: {
         color: 'white',
         //font-family: Montserrat,
-        fontSize: 18,
+        fontSize: 20,
         //fontStyle: normal,
         fontWeight: '700',
         lineHeight: 18.5, /* 123.333% */
         letterSpacing: 0.5,
+        marginBottom: 3,
     },
     profileSubheading: {
         color: 'white',
         //fontFamily: '',
         fontSize: 14,
         //fontStyle: normal,
-        fontWeight: '300',
+        fontWeight: '400',
         lineHeight: 15, /* 123.333% */
         letterSpacing: 0,
         // wordWrap: 'break-word',

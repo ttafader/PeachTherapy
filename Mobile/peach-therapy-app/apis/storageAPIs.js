@@ -1,6 +1,17 @@
 import { storage } from './firebaseConfig'
 import { ref, listAll, getBytes, getDownloadURL } from "firebase/storage";
 
+
+export async function getImageURLFromStorage(imagePath) {
+    try {
+        const storageRef = ref(storage, imagePath); // Assuming 'storage' is your Firebase storage instance
+        return await getDownloadURL(storageRef);
+    } catch (error) {
+        console.error("Error fetching image URL:", error);
+        throw error; // Rethrow the error for handling in the calling component
+    }
+}
+
 export async function getWavFileFromStorage(url) {
     const storageRef = ref(storage, url);
     return await getDownloadURL(storageRef)

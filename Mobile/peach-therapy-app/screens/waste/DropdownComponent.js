@@ -4,14 +4,9 @@ import { Dropdown } from 'react-native-element-dropdown';
 import AntDesign from '@expo/vector-icons/AntDesign';
 
 const data = [
-  { label: 'Item 1', value: '1' },
-  { label: 'Item 2', value: '2' },
-  { label: 'Item 3', value: '3' },
-  { label: 'Item 4', value: '4' },
-  { label: 'Item 5', value: '5' },
-  { label: 'Item 6', value: '6' },
-  { label: 'Item 7', value: '7' },
-  { label: 'Item 8', value: '8' },
+  { label: 'Text Notifications', value: '1' },
+  { label: 'Email Notifications', value: '2' },
+  { label: 'In-App Notifications', value: '3' },
 ];
 
 const DropdownComponent = () => {
@@ -43,7 +38,7 @@ const DropdownComponent = () => {
         maxHeight={300}
         labelField="label"
         valueField="value"
-        placeholder={!isFocus ? 'Select item' : '...'}
+        placeholder={!isFocus ? 'Select Notification Preference' : '...'}
         searchPlaceholder="Search..."
 
         value={value}
@@ -53,14 +48,14 @@ const DropdownComponent = () => {
           setValue(item.value);
           setIsFocus(false);
         }}
-        renderLeftIcon={() => (
-          <AntDesign
-            style={styles.icon}
-            color={isFocus ? '#24A8AC' : '#24A8AC'}
-            name="Safety"
-            size={20}
-          />
-        )}
+      // renderLeftIcon={() => (
+      //   <AntDesign
+      //     style={styles.icon}
+      //     color={isFocus ? '#24A8AC' : '#24A8AC'}
+      //     name="Safety"
+      //     size={20}
+      //   />
+      // )}
       />
     </SafeAreaView>
   );

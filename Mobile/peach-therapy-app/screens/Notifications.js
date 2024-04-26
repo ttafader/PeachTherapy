@@ -23,9 +23,6 @@ export default function Notifications({ navigation, props }) {
   useEffect(() => {
     if (!isUserSignedIn()) navigation.replace("Login")
   })
-  function goToRecordings() {
-    navigation.navigate('Waveform')
-  }
   function buttonClicked() {
     navigation.navigate('Account')
 
@@ -35,7 +32,7 @@ export default function Notifications({ navigation, props }) {
 
   }
   function goToChart() {
-    navigation.navigate('DonutChart')
+    navigation.navigate('Chart')
 
   }
 
@@ -55,7 +52,7 @@ export default function Notifications({ navigation, props }) {
         <Text style={styles.title}>
           Your Notifications
         </Text>
-
+        {/* 
         <View style={styles.newNotif} >
           <Text style={styles.accentButtonText}>New</Text>
           <View style={{ backgroundColor: '#FFFAF9', borderColor: '#F08462', borderWidth: 2, padding: 20, borderRadius: 10, textAlign: 'left', }}>
@@ -97,12 +94,12 @@ export default function Notifications({ navigation, props }) {
 
             }}>has updated your recording #0789 with Doctor’s Notes</Text>
           </View>
-        </View>
+        </View> */}
 
-
+        {/* 
 
         <View style={styles.oldNotif} >
-          <Text style={styles.accentButtonText}>Older Notifications</Text>
+          <Text style={styles.accentButtonText}>Previous Notifications</Text>
 
           <View style={{ backgroundColor: '#FFFAF9', borderColor: '#F08462', borderWidth: 1, padding: 20, borderRadius: 10, textAlign: 'left', marginBottom: 20, width: "100%" }}>
 
@@ -211,9 +208,9 @@ export default function Notifications({ navigation, props }) {
             }}>Created your Account on Oct 21st ,2022</Text>
           </View>
 
-        </View>
+        </View> */}
 
-        <Text style={styles.accentButtonText}>No Other Notifications</Text>
+        <Text style={styles.accentButtonText}>You have {'\n'}no new notifications</Text>
 
 
       </View>
@@ -364,8 +361,9 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     letterSpacing: 1,
     // wordWrap: 'break-word',
-    textAlign: 'left',
+    textAlign: 'center',
     marginBottom: 40,
+    marginTop: 30,
 
   },
 

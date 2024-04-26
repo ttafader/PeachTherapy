@@ -3,6 +3,8 @@ import { Alert, Button, TouchableHighlight, StyleSheet, Text, View, Image, TextI
 import { isUserSignedIn } from '../apis/authenticationAPIs';
 import ProfileHeader from '../components/ProfileHeader';
 import BackButton from '../components/BackButton';
+import ClinicianNavComp from '../components/ClinicianNavComp';
+import PatientNavComp from '../components/PatientNavComp';
 
 export default function TermsNConditions({ navigation, props }) {
 
@@ -27,31 +29,11 @@ export default function TermsNConditions({ navigation, props }) {
     <View style={styles.wholePage}>
       <View style={styles.navBar}>
         <SafeAreaView style={styles.container}>
+          <View style={styles.navBar}>
+            {user?.profile?.user_type === 1 && <ClinicianNavComp navigation={navigation} />}
+            {user?.profile?.user_type === 2 && <PatientNavComp navigation={navigation} colorBG={'#24A8AC'} />}
+          </View>
 
-          <Pressable>
-            <Image source={require('../assets/Vector-4.png')}
-              style={styles.icon}
-            />
-          </Pressable>
-          <Pressable>
-            <Image source={require('../assets/Vector.png')}
-              style={styles.icon}
-            />
-          </Pressable>
-          <Pressable onPress={() => goToCalendar()}>
-            <Image source={require('../assets/Vector-1.png')}
-              style={styles.icon}
-            />
-          </Pressable>
-          <Pressable onPress={() => goToNotifs()}>
-            <Image source={require('../assets/Vector-2.png')}
-              style={styles.icon}
-            />
-          </Pressable>
-
-          <Pressable style={styles.navSelect} onPress={() => buttonClicked()}>
-            <Image source={require('../assets/Vector-3.png')} style={styles.icon} />
-          </Pressable>
         </SafeAreaView>
       </View>
       <ProfileHeader colorBG={'#24A8AC'} />

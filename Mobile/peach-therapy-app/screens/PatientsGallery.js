@@ -13,37 +13,26 @@ import ProfileComp from '../components/ProfileComp';
 import BackButton from '../components/BackButton';
 
 export default function PatientsGallery({ navigation, props }) {
-  const [patients, setPatients] = useState({})
+  const [patients, setPatients] = useState([])
   const [recordings, setRecordings] = useState({})
   const [loading, setLoading] = useState(true)
 
   //for condiitonals
-  const [user, setUser] = useState({});
-  useEffect(() => {
+  const [user, setUser] = useState([]);
 
-    if (!isUserSignedIn()) navigation.replace("Login");
-    async function loadUserData() {
-      setUser(await getUserDetails())
-    }
-    loadUserData()
-  }, [])
+  async function loadUserData() {
+    const dets = await getUserDetails()
+    setPatients(dets['patients'])
+    setUser(dets)
+  }
 
   useEffect(() => {
+
     setLoading(true)
-
-
     if (!isUserSignedIn()) navigation.replace("Login")
 
-
-    async function loadUserData() {
-      const dets = await getUserDetails()
-      setPatients(dets['patients'])
-
-    }
     loadUserData();
     setLoading(false)
-
-
   }, [])
 
 
@@ -53,6 +42,7 @@ export default function PatientsGallery({ navigation, props }) {
 
       <View style={styles.wholePage}>
         <View style={styles.navBar}>
+          {console.log('helooooooo', user)}
           {user?.profile?.user_type === 1 && <ClinicianNavComp navigation={navigation} colorBG={'#FFA386'} />}
           {user?.profile?.user_type === 2 && <PatientNavComp navigation={navigation} colorBG={'#FFA386'} />}
         </View>
@@ -60,13 +50,9 @@ export default function PatientsGallery({ navigation, props }) {
         <ProfileHeader colorBG={'#FFA386'} />
         <BackButton navigation={navigation} colorBG={'#FFA386'}></BackButton>
         <ScrollView style={styles.pageContainer}>
-          {
-            Object.keys(patients).map((pat_id, idx) =>
-            (
-              <ProfileComp navigation={navigation} idx={idx} patients={patients[pat_id]} />
-            )
-            )
-          }
+          {patients.map((pat_id) => (
+            <ProfileComp navigation={navigation} patient_id={pat_id} />
+          ))}
 
         </ScrollView>
 

@@ -16,9 +16,12 @@ export default function WaveformComp({ lines, showDetails }) {
 
 
     function turnAudioLineIntoPercentForCSS(value) {
-        const percent = (value / heighestAmp) * 100
+        const percentpart = (value / heighestAmp) * 100
+        const percent = percentpart + 10
+        // console.log(percent)
         return percent + '%'
     }
+
 
     function resizeAudioData(originalArray) {
         const originalSize = originalArray.length
@@ -30,7 +33,7 @@ export default function WaveformComp({ lines, showDetails }) {
         for (let i = 0; i < newSize; i++) {
             const newIndex = Math.floor(i * ratio);
             // console.log(originalArray[newIndex])
-            newArray.push(originalArray[newIndex] + 2)
+            newArray.push(originalArray[newIndex] + 300)
             // console.log(i, Math.floor(i*ratio), originalArray[newIndex])
         }
 
@@ -41,7 +44,7 @@ export default function WaveformComp({ lines, showDetails }) {
         <View style={styles.waveformContainer}>
 
             {normalizedAudio.map((audioLine, index) => (
-                <View key={index} style={{ ...styles.waveformLine, height: turnAudioLineIntoPercentForCSS(audioLine), ...waveformStyling }} />
+                <View key={index} style={{ ...styles.waveformLine, minHeight: 2, height: turnAudioLineIntoPercentForCSS(audioLine), ...waveformStyling }} />
             ))
             }
 

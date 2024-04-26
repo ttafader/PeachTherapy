@@ -1,27 +1,38 @@
-import React, { Component, useEffect } from 'react';
+import React, { Component, useEffect, useState } from 'react';
 import { Alert, Button, TouchableHighlight, StyleSheet, Text, View, Image, TextInput, SafeAreaView, AreaChart, Pressable } from 'react-native';
 import { isUserSignedIn } from '../apis/authenticationAPIs';
 import ProfileHeader from './ProfileHeader';
 
 export default function ClinicianNavComp({ navigation, colorBG }) {
+  const [user, setUser] = useState({});
+  const [patient, setDoc] = useState({})
 
   useEffect(() => {
-    if (!isUserSignedIn()) navigation.replace("Login")
-  })
+    if (!isUserSignedIn()) navigation.replace("Login");
+    console.log('askjdghaskjdha')
+    loadUserData()
+  }, [])
 
-
-
-  function goToCal() {
-    navigation.navigate('PatientsGallery')
+  async function loadUserData() {
+    const doc = await getUserDetails()
+    setDoc(doc)
   }
 
+  function goToAccount() {
+    navigation.navigate('Account')
+  }
   function goToNotifs() {
     navigation.navigate('Notifications')
   }
 
-  function buttonClicked() {
-    navigation.navigate('Settings')
+  function goToCal() {
+    navigation.navigate('PatientsGallery', {
+      mode: "doctor",
+      patientObject: -99
+    })
   }
+
+
 
   return (//all
     <View style={styles.wholePage}>
@@ -37,7 +48,7 @@ export default function ClinicianNavComp({ navigation, colorBG }) {
               style={styles.icon}
             />
           </Pressable>
-          <Pressable onPress={() => buttonClicked()}>
+          <Pressable onPress={() => goToAccount()}>
             <Image source={require('../assets/man.png')} style={styles.icon} />
           </Pressable>
         </SafeAreaView>

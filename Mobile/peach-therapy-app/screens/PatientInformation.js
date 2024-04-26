@@ -10,9 +10,21 @@ import BackButton from '../components/BackButton';
 import { getPerson } from '../utilities/database_functions';
 import ClinicianHeader from '../components/ClinicianHeader';
 
-export default function WaveformScreen({ navigation, route }) {
+export default function PatientInformation({ navigation, route }) {
   const { patientObject } = route.params
-
+  const customLabels = {
+    birthday: "Birthday",
+    doctor_id: "Doctor ID",
+    doctor_name: "Doctor Name",
+    email: "Email",
+    first_name: "First Name",
+    img_url: "Image URL",
+    last_name: "Last Name",
+    ml_boundaries_plot: "ML Boundaries Plot",
+    patient_id: "Patient ID",
+    sex: "Sex",
+    user_type: "User Type"
+  };
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState([]);
   const [recordings, setRecordings] = useState(null);
@@ -29,7 +41,7 @@ export default function WaveformScreen({ navigation, route }) {
     if (!isUserSignedIn()) navigation.replace("Login");
 
     async function loadUserData() {
-      setRecordings(patientObject.recordings)
+      setRecordings(patientObject.profile)
     }
     loadUserData();
   }, []);
@@ -59,16 +71,17 @@ export default function WaveformScreen({ navigation, route }) {
       {user?.profile?.user_type === 1 && <ClinicianHeader colorBG={'#24A8AC'} patientObject={patientObject} />}
 
       <BackButton colorBG={'#FFA386'} navigation={navigation}></BackButton>
-      <View style={styles.pageContainer}>
-        <Text style={styles.title}>Your Recordings</Text>
-        {console.log("Number of iterations:", Object.keys(recordings).length)}
-        {recordings && Object.keys(recordings).length > 0 ? (
-          Object.keys(recordings).map((rec_id, idx) => (
-            <AudioComp navigation={navigation} idx={idx} recording={recordings[rec_id]} />
-          ))
-        ) : (
-          <Text style={styles.noRecordings}>No recordings{'\n'}available at this time</Text>
-        )}
+      <View style={{ width: "100%", padding: 40 }}>
+        <Text style={styles.title}>{patientObject.profile.first_name}'s Patient Information</Text>
+        {Object.keys(patientObject.profile).map((key, index) => (
+          // Check if the key is not equal to 'ml_boundaries_plot' before rendering
+          key !== 'ml_boundaries_plot' && key !== 'user_type' && (
+            <View key={index} >
+              <Text style={styles.text}>{customLabels[key]}:{'\n'}{patientObject.profile[key]}{'\n'}</Text>
+            </View>
+          )
+        ))}
+
       </View>
     </ScrollView>
   );
@@ -95,7 +108,8 @@ const styles = StyleSheet.create({
   },
   text: {
     color: '#2EAAAE',
-    fontWeight: '700',
+    fontWeight: '500',
+    textAlign: 'center',
 
   },
   button: {

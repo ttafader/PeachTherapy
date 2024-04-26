@@ -3,7 +3,7 @@ import { Image, StyleSheet, Text, View } from 'react-native'
 import { getUserDetails } from '../apis/authenticationAPIs'
 import { getPerson } from '../utilities/database_functions'
 
-export default function ClinicianHeader({ colorBG }) {
+export default function ClinicianHeader({ patientObject, colorBG }) {
     const [user, setUser] = useState({})
 
     const [doctorName, setDoctorName] = useState("")
@@ -12,9 +12,7 @@ export default function ClinicianHeader({ colorBG }) {
 
     useEffect(() => {
         async function loadUserData() {
-            const temp = await getUserDetails()
-            setUser(await getUserDetails())
-            getDoctorName(temp.profile.doctor_id)
+            getDoctorName(patientObject.profile.doctor_id)
 
         }
         loadUserData()
@@ -24,9 +22,9 @@ export default function ClinicianHeader({ colorBG }) {
 
     useEffect(() => {
         async function loadUserData() {
-            const temp = await getUserDetails();
-            setUser(temp);
-            const doctorDetails = await getDoctorDetails(temp.profile.doctor_id);
+
+            setUser(patientObject);
+            const doctorDetails = await getDoctorDetails(patientObject.profile.doctor_id);
             // console.log("Doctor Details:", doctorDetails);
             setDoctorName(doctorDetails.doctorName);
             setClinic(doctorDetails.clinic);
@@ -36,13 +34,13 @@ export default function ClinicianHeader({ colorBG }) {
 
     async function getDoctorDetails(uid) {
         try {
-            const tempArray = await getPerson(1, uid);
-            const temp = tempArray[0]; // Access the first element of the array
-            // console.log("Doctor Temp:", temp);
-            if (temp && temp.profile && temp.profile.first_name && temp.profile.last_name && temp.profile.clinic) {
+            const patientObjectArray = await getPerson(1, uid);
+            const patientObject = patientObjectArray[0]; // Access the first element of the array
+            // console.log("Doctor patientObject:", patientObject);
+            if (patientObject && patientObject.profile && patientObject.profile.first_name && patientObject.profile.last_name && patientObject.profile.clinic) {
                 return {
-                    doctorName: temp.profile.first_name + " " + temp.profile.last_name,
-                    clinic: temp.profile.clinic
+                    doctorName: patientObject.profile.first_name + " " + patientObject.profile.last_name,
+                    clinic: patientObject.profile.clinic
                 };
             } else {
                 return { doctorName: "Unknown", clinic: "Unknown" };
@@ -55,34 +53,23 @@ export default function ClinicianHeader({ colorBG }) {
 
 
     async function getDoctorName(uid) {
-        const temp = await getPerson(1, uid)
+        const docTemp = await getPerson(1, uid)
         // console.log(uid)
-        await setDoctorName(temp.profile.first_name + " " + temp.profile.last_name)
+        await setDoctorName(docTemp.profile.first_name + " " + docTemp.profile.last_name)
 
     }
 
 
     return user.profile && (
         <View style={[styles.accountInfo, { backgroundColor: colorBG }]}>
-            <Image src={user.profile.img_url} style={styles.profilePic} />
-            <View style={styles.accountInfoContainer}>
-                <Text style={styles.profileDescription}>{user.profile.first_name} {user.profile.last_name}</Text>
-                {
-                    user?.profile?.user_type === 2 && (
-                        <Text style={styles.profileSubheading}>
-                            Patient with Dr. {doctorName}
-                            {/* {clinic} */}
-                        </Text>
-                    )
-                }
-                {
-                    user?.profile?.user_type === 1 && (
-                        <Text style={styles.profileSubheading}>
-                            Speech Specialist at {user.profile.clinic}
-                            {/* {clinic} */}
-                        </Text>
-                    )
-                }
+            <View style={styles.imgDescripCont}>
+
+                <Image src={user.profile.img_url} style={styles.profilePic} />
+                <View style={styles.accountInfoContainer}>
+                    <Text style={styles.profileDescription}>{user.profile.first_name} {user.profile.last_name}</Text>
+                    <Text style={styles.profileSubheading}>Patient with Dr. {doctorName}</Text>
+
+                </View>
             </View>
         </View>
     )
@@ -91,21 +78,31 @@ const styles = StyleSheet.create({
     accountInfo: {
         //flex: 1,
         flexDirection: 'row',
+        borderTopLeftRadius: 30,
+        borderTopRightRadius: 30,
         marginTop: 5,
-        padding: 10,
-        height: 100,
+        marginHorizontal: 5,
+        padding: 25,
+        height: 130,
         // backgroundColor: '#24A8AC',
         // backgroundColor: '#FFA386',
-        justifyContent: 'center',
-        alignItems: 'center',
+        // justifyContent: 'center',
+        // alignItems: 'center',
 
         shadowColor: 'black',
         shadowOffset: { width: 0, height: 0.5 },
         shadowOpacity: 0.05,
         shadowRadius: 6,
     },
+    imgDescripCont: {
+        flexDirection: 'row',
+        height: 60,
+
+    },
     accountInfoContainer: {
-        margin: 10,
+        margin: 20,
+        // height: 60,
+        justifyContent: 'center',
     },
     profilePic: {
         width: 60,
@@ -117,18 +114,19 @@ const styles = StyleSheet.create({
     profileDescription: {
         color: 'white',
         //font-family: Montserrat,
-        fontSize: 18,
+        fontSize: 20,
         //fontStyle: normal,
         fontWeight: '700',
         lineHeight: 18.5, /* 123.333% */
         letterSpacing: 0.5,
+        marginBottom: 3,
     },
     profileSubheading: {
         color: 'white',
         //fontFamily: '',
         fontSize: 14,
         //fontStyle: normal,
-        fontWeight: '300',
+        fontWeight: '400',
         lineHeight: 15, /* 123.333% */
         letterSpacing: 0,
         // wordWrap: 'break-word',

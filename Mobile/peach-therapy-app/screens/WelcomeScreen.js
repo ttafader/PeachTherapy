@@ -30,7 +30,7 @@ export default function WelcomeScreen({ navigation, props }) {
       <TouchableOpacity style={styles.button} onPress={() => buttonClicked()}>
         <Text style={styles.text}>Login</Text>
       </TouchableOpacity>
-      <TouchableOpacity color="" style={styles.visitOurWebsite} onPress={() => goToWebsite()} title="Visit Our Website">
+      <TouchableOpacity style={styles.visitOurWebsite} onPress={() => goToWebsite()} title="Visit Our Website">
         <Text style={styles.visitText}>Visit Our Website </Text>
       </TouchableOpacity>
     </SafeAreaView>
@@ -71,7 +71,7 @@ const styles = StyleSheet.create({
     lineHeight: 40,
     letterSpacing: 0.66,
     textAlign: 'center',
-    marginTop: -40,
+    marginTop: 20,
   },
   loginButton: {
 
@@ -103,13 +103,20 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   logo: {
-    width: 300,
-    height: 300,
+    maxWidth: 300, // Set the maximum width
+    aspectRatio: 1.2125, // 887 / 733.03
+    maxHeight: 200,
+    marginBottom: 10,
+    width: '100%', // Allow the width to adjust based on the height constraint
+    height: '100%', // Allow the height to adjust based on the width constraint
   },
+
+
   titleAndLogo: {
     flex: 1,
     position: 'absolute',
-    top: 70,
+    top: 100,
+    width: 300,
     justifyContent: "center",
     alignItems: "center",
   },

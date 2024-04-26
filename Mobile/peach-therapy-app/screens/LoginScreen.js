@@ -1,6 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { Alert, ScrollView, ActivityIndicator, Pressable, StyleSheet, Text, View, Image, TextInput, KeyboardAvoidingView, Keyboard, RefreshControl } from 'react-native';
-import { signin } from '../apis/authenticationAPIs';
+// LoginScreen.js
+
+import React, { useEffect, useState } from 'react';
+import { Alert, ScrollView, Platform, ActivityIndicator, Pressable, StyleSheet, Text, View, Image, TextInput, KeyboardAvoidingView, Keyboard, RefreshControl } from 'react-native';
+import { signin, resetPassword } from '../apis/authenticationAPIs';
 import BackButton from '../components/BackButton';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { getUserDetails } from '../apis/authenticationAPIs';
@@ -76,8 +78,22 @@ export default function LoginScreen({ navigation }) {
     });
   }
 
-  const logoStyle = keyboardVisible ? { width: 150, height: 150 } : { width: 300, height: 300 };
-  const titleStyle = keyboardVisible ? { fontSize: 20, lineHeight: 20, marginTop: -30 } : { fontSize: 33, lineHeight: 33 };
+  async function handleForgotPassword() {
+    const email = username; // Assuming the username is the user's email
+    if (email) {
+      const success = await resetPassword(email);
+      if (success) {
+        Alert.alert('Password Reset Email Sent', 'Check your email to reset your password.');
+      } else {
+        Alert.alert('Error', 'Failed to send password reset email. Please try again later.');
+      }
+    } else {
+      Alert.alert('Error', 'Please enter your email to reset your password.');
+    }
+  }
+
+  const logoStyle = keyboardVisible ? { width: 100, height: 100 } : { width: 300, height: 300 };
+  const titleStyle = keyboardVisible ? { fontSize: 20, lineHeight: 20, marginTop: 10 } : { fontSize: 33, lineHeight: 33 };
 
   return (
     <KeyboardAvoidingView behavior="padding" style={styles.container} >
@@ -116,7 +132,8 @@ export default function LoginScreen({ navigation }) {
           <TextInput
             style={signinError === -1 ? [styles.errorInput, styles.errorPlaceholderText] : [styles.writingInput, styles.placeholderText]}
             placeholder="eg. johndoe@email.com"
-            textAlignVertical="top"
+            // textAlignVertical="top"
+            // placeholderTextColor={signinError === -1 ? ['#DC1A00'] : ['#24A8AC']}
             underlineColorAndroid="transparent"
             onChangeText={(e) => setUsername(e)}
             value={username}
@@ -125,19 +142,20 @@ export default function LoginScreen({ navigation }) {
           <TextInput
             style={signinError === -2 ? [styles.errorInput, styles.errorPlaceholderText] : [styles.writingInput, styles.placeholderText]}
             secureTextEntry={true}
+            // placeholderTextColor={signinError === -2 ? ['#DC1A00'] : ['#24A8AC']}
             placeholder="eg. Peach123* "
             onChangeText={(e) => setPassword(e)}
             value={password}
           />
 
-          <Pressable disabled={loading} style={styles.button} onPress={() => buttonClicked()}>
+          <Pressable disabled={loading} style={styles.button} onPress={buttonClicked}>
             {loading ?
               <ActivityIndicator size={'small'} color={'#FFFFFF'} />
               :
               <Text style={styles.text}>Login</Text>
             }
           </Pressable>
-          <Pressable onPress={() => Alert.alert('This Button Changes Password')}>
+          <Pressable onPress={handleForgotPassword}>
             <Text style={styles.forgotPassword}>Forgot Password</Text>
           </Pressable>
           {/* 
@@ -182,7 +200,7 @@ const styles = StyleSheet.create({
     lineHeight: 33,
     letterSpacing: 0.66,
     // wordWrap: 'break-word',
-    marginTop: -80,
+    marginTop: 20,
     marginBottom: 40,
     textAlign: 'center',
   },
@@ -215,22 +233,29 @@ const styles = StyleSheet.create({
     width: '70%'
 
   },
-
   errorInput: {
-
     height: 40,
     borderRadius: 10,
-    backgroundColor: '#FED6D0',
-    /* baby shadow */
+    backgroundColor: 'rgb(254, 214, 208)', // Updated background color using RGB representation
     paddingRight: 20,
     paddingLeft: 20,
     marginBottom: 20,
-    width: '70%'
-
+    width: '70%',
+    ...Platform.select({
+      android: {
+        // Android-specific styles
+        borderWidth: 1,
+        borderColor: '#DC1A00', // Add border color for Android
+      },
+      ios: {
+        // iOS-specific styles
+      }
+    })
   },
 
+
   errorPlaceholderText: {
-    opacity: '38%',
+
     color: '#DC1A00',
     fontSize: 13,
     letterSpacing: 2,
@@ -245,9 +270,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   logo: {
-    width: 200,
-    height: 200,
-    marginBottom: 20,
+    maxWidth: 300, // Set the maximum width
+    aspectRatio: 1.2125, // 887 / 733.03
+    maxHeight: 200,
+    marginBottom: 10,
+    width: '100%', // Allow the width to adjust based on the height constraint
+    height: '100%', // Allow the height to adjust based on the width constraint
   },
   titleAndLogo: {
     justifyContent: "center",
@@ -280,4 +308,3 @@ const styles = StyleSheet.create({
   }
 
 });
-
